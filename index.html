@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A Lenda de Netzeroth - Ferramentas do Mestre</title>
+    <title>Netzeroth - Ferramentas do Mestre</title>
     <style>
         :root{
             --bg: #0b0e14; --card: #111623; --muted: #8992a4; --text: #eaeefb;
@@ -837,6 +837,7 @@
         function loadState() {
             const savedData = localStorage.getItem('netzerothGMData');
             appData = savedData ? JSON.parse(savedData) : JSON.parse(JSON.stringify(initialData));
+            
             // Migration for new features
             if (!appData.players) appData.players = [];
             if (!appData.generators.custom) appData.generators.custom = [];
@@ -848,6 +849,14 @@
             if (!appData.encounters) appData.encounters = { current: { name: '', creatures: [] }};
             if (!appData.groupPoints) appData.groupPoints = { blessing: 0, corruption: 0 };
             if (!appData.atlas) appData.atlas = {};
+
+            // Ensure all regional event data from the latest code version is present.
+            if (!appData.generators.regional) appData.generators.regional = {};
+            for (const region in initialData.generators.regional) {
+                if (!appData.generators.regional[region]) {
+                    appData.generators.regional[region] = initialData.generators.regional[region];
+                }
+            }
         }
 
         function handleTabClick(e) {
@@ -1038,28 +1047,28 @@
                 for (const key of path) {
                     value = value ? value[key] : undefined;
                 }
-                input.value = value || (input.type === 'number' ? 0 : '');
+                input.value = value !== undefined ? value : (input.type === 'number' ? 0 : '');
             });
 
-            renderPlayerSkillsForEdit(player.data.skills || [], player.data.atributos || {});
+            renderPlayerSkillsForEdit(player.data.skills || []);
             renderPlayerInventoryForEdit(player.data.inventario?.items || []);
             
             modal.style.display = 'flex';
         }
 
-        function renderPlayerSkillsForEdit(skills, atributos) {
+        function renderPlayerSkillsForEdit(skills) {
             const container = $('#edit-player-skills-list');
             container.innerHTML = '';
             const ATTR_LIST = ["FOR", "AGI", "VIG", "AST", "SAB", "CAR", "FE"];
-            skills.forEach((skill, index) => {
+            skills.forEach((skill) => {
                 const item = document.createElement('div');
                 item.className = 'dynamic-list-item';
                 item.style.gridTemplateColumns = '2fr 1fr 1fr 1fr auto';
                 item.innerHTML = `
                     <input type="text" class="edit-player-skill-name" value="${skill.name}" placeholder="Nome da Skill">
                     <select class="edit-player-skill-attr">${ATTR_LIST.map(a => `<option value="${a}" ${a === skill.attr ? 'selected' : ''}>${a}</option>`).join('')}</select>
-                    <label style="display:flex; align-items:center; gap: 4px;"><input type="checkbox" class="edit-player-skill-trained" ${skill.trained ? 'checked' : ''}> T</label>
-                    <label style="display:flex; align-items:center; gap: 4px;"><input type="checkbox" class="edit-player-skill-spec" ${skill.specialized ? 'checked' : ''}> E</label>
+                    <label style="display:flex; align-items:center; gap: 4px; justify-content: center;"><input type="checkbox" class="edit-player-skill-trained" ${skill.trained ? 'checked' : ''}> T</label>
+                    <label style="display:flex; align-items:center; gap: 4px; justify-content: center;"><input type="checkbox" class="edit-player-skill-spec" ${skill.specialized ? 'checked' : ''}> E</label>
                     <button class="btn small destructive" onclick="this.parentElement.remove()">X</button>
                 `;
                 container.appendChild(item);
@@ -1075,8 +1084,8 @@
             item.innerHTML = `
                 <input type="text" class="edit-player-skill-name" placeholder="Nova Skill">
                 <select class="edit-player-skill-attr">${ATTR_LIST.map(a => `<option value="${a}">${a}</option>`).join('')}</select>
-                <label style="display:flex; align-items:center; gap: 4px;"><input type="checkbox" class="edit-player-skill-trained"> T</label>
-                <label style="display:flex; align-items:center; gap: 4px;"><input type="checkbox" class="edit-player-skill-spec"> E</label>
+                <label style="display:flex; align-items:center; gap: 4px; justify-content: center;"><input type="checkbox" class="edit-player-skill-trained"> T</label>
+                <label style="display:flex; align-items:center; gap: 4px; justify-content: center;"><input type="checkbox" class="edit-player-skill-spec"> E</label>
                 <button class="btn small destructive" onclick="this.parentElement.remove()">X</button>
             `;
             container.appendChild(item);
@@ -1110,6 +1119,18 @@
             `;
             container.appendChild(row);
         }
+        
+        function setNestedValue(obj, path, value) {
+            const keys = path.split('.');
+            let current = obj;
+            for (let i = 0; i < keys.length - 1; i++) {
+                if (!current[keys[i]]) {
+                    current[keys[i]] = {};
+                }
+                current = current[keys[i]];
+            }
+            current[keys[keys.length - 1]] = value;
+        }
 
         function handleSavePlayerSheet() {
             const modal = $('#player-sheet-modal');
@@ -1117,18 +1138,12 @@
             const player = appData.players.find(p => p.id === id);
             if (!player) return;
             
-            const newData = {};
+            const newData = JSON.parse(JSON.stringify(player.data)); // Deep copy to preserve structure
+
             modal.querySelectorAll('input[data-path], textarea[data-path]').forEach(input => {
-                const path = input.dataset.path.split('.');
-                let current = newData;
-                path.forEach((key, index) => {
-                    if (index === path.length - 1) {
-                        current[key] = input.type === 'number' ? (parseInt(input.value) || 0) : input.value;
-                    } else {
-                        current[key] = current[key] || {};
-                        current = current[key];
-                    }
-                });
+                const path = input.dataset.path;
+                const value = input.type === 'number' ? (parseInt(input.value) || 0) : input.value;
+                setNestedValue(newData, path, value);
             });
 
             // Save skills
@@ -1143,7 +1158,7 @@
             });
 
             // Save inventory
-            if (!newData.inventario) newData.inventario = {};
+            if (!newData.inventario) newData.inventario = {items:[]};
             newData.inventario.items = [];
              $('#edit-player-inventory-list').querySelectorAll('.dynamic-list-item').forEach(row => {
                 newData.inventario.items.push({
@@ -1241,8 +1256,7 @@
             }));
             $$('.atlas-notes').forEach(textarea => textarea.addEventListener('input', e => {
                 appData.atlas[e.target.dataset.region].notes = e.target.value;
-                // No need to call saveState here, it's called by the button clicks, this would be too frequent.
-                // Autosave can be implemented later if needed.
+                saveState();
             }));
         }
 
@@ -1301,9 +1315,20 @@
 
         // --- GENERATORS ---
         function handleGeneratorClick(e) {
-            const genId = e.target.dataset.generator; if (!genId) return;
-            const list = appData.generators[genId === 'regional' ? 'regional' : genId][genId === 'regional' ? $('#region-select').value : ''];
-            $(`#${genId}-result`).textContent = list[Math.floor(Math.random() * list.length)];
+            const genId = e.target.dataset.generator; 
+            if (!genId) return;
+
+            let list;
+            if (genId === 'regional') {
+                list = appData.generators.regional[$('#region-select').value];
+            } else {
+                list = appData.generators[genId];
+            }
+            
+            if (list && list.length > 0) {
+                const result = list[Math.floor(Math.random() * list.length)];
+                $(`#${genId}-result`).textContent = result;
+            }
         }
         function handleTreasureGenerator() {
             const tier = $('#treasure-tier-select').value;
@@ -1922,3 +1947,4 @@
     </script>
 </body>
 </html>
+
