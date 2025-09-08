@@ -1,0 +1,1924 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Lenda de Netzeroth - Ferramentas do Mestre</title>
+    <style>
+        :root{
+            --bg: #0b0e14; --card: #111623; --muted: #8992a4; --text: #eaeefb;
+            --accent: #6ea8fe; --accent2:#9bdbff; --danger:#ff6b6b; --ok:#33d1a0;
+            --warn:#f6c177; --border: #22283a; --shadow: rgba(0, 0, 0, 0.4);
+        }
+        [data-theme="light"]{
+            --bg:#f7f7fb; --card:#ffffff; --muted:#6b7280; --text:#111827;
+            --accent:#2563eb; --accent2:#60a5fa; --danger:#dc2626; --ok:#059669;
+            --warn:#d97706; --border:#e5e7eb; --shadow: rgba(0, 0, 0, 0.08);
+        }
+        html { scroll-behavior: smooth; }
+        body {
+            margin:0; background:var(--bg); color:var(--text);
+            font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji", "Segoe UI Symbol";
+        }
+        .app { max-width:1200px; margin:0 auto; padding:16px 16px 120px; }
+        header.top {
+            position: sticky; top:0; z-index: 5;
+            background: linear-gradient(180deg, var(--bg) 0%, transparent 100%);
+            backdrop-filter: blur(6px); padding: 10px 16px;
+        }
+        .header-content { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;}
+        .brand { font-weight:800; letter-spacing:.2px; font-size: 1.25rem; }
+        .header-actions { display: flex; gap: 0.5rem; }
+        .muted { color:var(--muted); }
+        .btn {
+            border:1px solid var(--border);
+            background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(0,0,0,.04));
+            color:var(--text); padding:8px 12px; border-radius:14px; cursor:pointer; font-weight:600;
+            transition: all 0.2s ease-in-out; text-decoration: none; display: inline-block;
+        }
+        .btn:hover { border-color:var(--accent); transform: translateY(-1px); }
+        .btn.primary { background: linear-gradient(180deg, var(--accent2), var(--accent)); color:#0b1020; border-color: transparent; }
+        .btn.destructive { border-color: transparent; background:linear-gradient(180deg, #ffb4c2, var(--danger)); color:#1d0004; }
+        .btn.small { padding:6px 10px; border-radius:12px; font-size:.9rem; }
+        select, input, textarea {
+            width:100%; box-sizing:border-box; padding:10px 12px; border-radius:12px;
+            border:1px solid var(--border); background:var(--card); color:var(--text);
+            font-family: inherit; font-size: 1rem;
+        }
+        textarea { min-height:120px; resize:vertical; }
+        .grid { display:grid; gap:1.5rem; }
+        .grid-2 { grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); }
+        .card {
+            background:var(--card); border:1px solid var(--border);
+            border-radius:20px; padding:1.5rem;
+            box-shadow: 0 10px 30px var(--shadow);
+        }
+        .section-title { font-weight:800; margin:0 0 1rem; display:flex; align-items:center; gap:10px; font-size: 1.5rem; color: var(--text); }
+        .tabs { border-bottom: 1px solid var(--border); padding-bottom: 1rem; display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+        .tab {
+            padding:10px 14px; border-radius:14px; cursor:pointer;
+            border:1px solid var(--border); background:var(--card); color:var(--text);
+            font-weight: 600;
+        }
+        .tab.active { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+        .pane { display:none; }
+        .pane.active { display:block; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--muted); }
+        .accordion-item { border: 1px solid var(--border); border-radius:18px; margin-bottom: 1rem; overflow: hidden; background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(0,0,0,.05)); }
+        .accordion-header { padding: 1rem 1.5rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .accordion-content { padding: 0 1.5rem 1.5rem; display: none; border-top: 1px solid var(--border); }
+        .accordion-item.open .accordion-content { display: block; }
+        .accordion-title { font-size: 1.1rem; font-weight: 700; }
+        .accordion-actions { display: flex; gap: 0.5rem; }
+        .map-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+        .map-item {
+            background:var(--card); border:1px solid var(--border); border-radius:18px;
+            text-align: center; padding: 1rem; display: flex; flex-direction: column; justify-content: space-between;
+        }
+        .map-item img { max-width: 100%; height: 120px; object-fit: cover; cursor: pointer; border-radius: 12px; margin-bottom: 0.75rem; }
+        .map-item p { margin: 0.5rem 0; font-weight: 600; }
+        .map-controls { display:flex; gap: 0.5rem; justify-content: center; }
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7);
+            display: none; justify-content: center; align-items: center; z-index: 200; backdrop-filter: blur(4px);
+        }
+        .modal-content { background: var(--card); padding: 2rem; border-radius: 20px; max-width: 90%; width: 800px; max-height: 90%; overflow: auto; border: 1px solid var(--border); }
+        .modal-content.small { width: 600px; }
+        .modal-content img { max-width: 100%; max-height: 80vh; border-radius: 12px; }
+        .clock-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; }
+        .clock { text-align: center; padding: 1rem; }
+        .clock-svg { cursor: pointer; }
+        .clock-segment { fill: var(--border); transition: fill 0.2s; }
+        .clock-segment.filled { fill: var(--danger); }
+        .clock-title { font-weight: 600; margin-top: 0.5rem; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .hint { font-size:.9rem; color:var(--muted); margin-bottom: 1rem; }
+        h3 { font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; }
+        h4 { font-size: 1.1rem; font-weight: 600; margin: 1.5rem 0 0.5rem; color: var(--accent2); }
+        .result-box {
+            font-style: italic; color: var(--muted); background: var(--bg);
+            padding: 1rem; border-radius: 12px; min-height: 2.5rem; border: 1px dashed var(--border);
+        }
+        .guide-content { line-height: 1.7; }
+        .guide-content h4 { color: var(--accent2); margin-top: 1.5rem; margin-bottom: 0.5rem; }
+        .guide-content p { color: var(--muted); }
+        .guide-content code { background: var(--bg); padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+        .guide-content table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .guide-content th, .guide-content td { border: 1px solid var(--border); padding: 8px; text-align: left; }
+        .guide-content th { background-color: rgba(255,255,255,0.05); }
+
+        #timer-display { font-size: 4rem; font-weight: 700; text-align: center; margin: 1rem 0; }
+        .combat-tracker-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 1.5rem; }
+        .combat-list th, .combat-list td { padding: 0.75rem; vertical-align: middle; }
+        .combat-list .current-turn { background-color: rgba(110, 168, 254, 0.1); }
+        .combat-list .current-turn td { border-left: 3px solid var(--accent); }
+        .bestiary-list .bestiary-item { display:flex; justify-content:space-between; align-items:center; padding: 0.5rem; border-radius:8px; }
+        .bestiary-list .bestiary-item:hover { background:var(--border); }
+        
+        .dice-roller-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; }
+        .dice-buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+        .dice-result-display { font-size: 5rem; font-weight: 900; text-align: center; color: var(--accent); }
+        .dice-history { max-height: 200px; overflow-y: auto; padding: 1rem; border: 1px dashed var(--border); border-radius: 12px; margin-top: 1rem; }
+        
+        .order-reputation-grid .order-item, .atlas-region-item {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .order-reputation-grid .order-item:last-child, .atlas-region-item:last-child { border-bottom: none; }
+        .player-sheet-table { width: 100%; border-collapse: collapse; }
+        .player-sheet-table th, .player-sheet-table td { padding: 6px; border: 1px solid var(--border); }
+        
+        #player-sheet-modal .pane {
+            max-height: 50vh;
+            overflow-y: auto;
+            padding-right: 1rem;
+        }
+        .dynamic-list-item {
+            display: grid;
+            gap: 0.5rem;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        @media (max-width: 900px) { .combat-tracker-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { .dice-roller-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body data-theme="dark">
+
+    <header class="top">
+        <div class="header-content">
+            <div class="brand">🎲 Ferramentas do Mestre de Netzeroth</div>
+            <div class="header-actions">
+                <button class="btn small" id="save-all-btn">Salvar</button>
+                <button class="btn small" id="export-json-btn">Exportar JSON</button>
+                <label class="btn small">
+                    Importar <input type="file" id="import-json-input" accept=".json" style="display: none;">
+                </label>
+                <button class="btn small" id="themeToggle">Tema</button>
+            </div>
+        </div>
+        <div class="tabs" id="tabContainer">
+            <button class="tab active" data-tab="diary">Diário</button>
+            <button class="tab" data-tab="players">Jogadores</button>
+            <button class="tab" data-tab="npcs">NPCs</button>
+            <button class="tab" data-tab="atlas">Atlas</button>
+            <button class="tab" data-tab="maps">Mapas</button>
+            <button class="tab" data-tab="generators">Geradores</button>
+            <button class="tab" data-tab="timers">Timers & Relógios</button>
+            <button class="tab" data-tab="bestiary">Bestiário</button>
+            <button class="tab" data-tab="encounters">Encontros</button>
+            <button class="tab" data-tab="combat">Combate</button>
+            <button class="tab" data-tab="dice-roller">Dados</button>
+            <button class="tab" data-tab="tests">Guia de Testes</button>
+            <button class="tab" data-tab="orders">Ordens</button>
+        </div>
+    </header>
+
+    <main class="app">
+        <!-- PANE: DIÁRIO DE CAMPANHA -->
+        <div id="diary" class="pane active">
+            <div class="card">
+                <h3 class="section-title">📝 Nova Entrada no Diário</h3>
+                <div id="diary-form">
+                    <input type="hidden" id="diary-id">
+                    <div class="grid grid-2">
+                        <div class="form-group">
+                            <label for="diary-title">Título da Sessão / Número</label>
+                            <input type="text" id="diary-title" placeholder="Ex: Sessão 3: As Cinzas de Haravoth">
+                        </div>
+                        <div class="form-group">
+                            <label for="diary-date">Data da Sessão</label>
+                            <input type="date" id="diary-date">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="diary-summary">Resumo da Partida</label>
+                        <textarea id="diary-summary" placeholder="Principais acontecimentos, descobertas e desafios..."></textarea>
+                    </div>
+                    <button class="btn primary" id="saveDiaryEntry">Salvar Entrada</button>
+                    <button class="btn" id="clearDiaryForm" style="display: none;">Cancelar Edição</button>
+                </div>
+            </div>
+            <h2 class="section-title" style="margin-top: 2rem;">Sessões Anteriores</h2>
+            <div id="diary-list"></div>
+        </div>
+        
+        <!-- PANE: JOGADORES -->
+        <div id="players" class="pane">
+            <h2 class="section-title">👥 Gerenciador de Jogadores</h2>
+            <div class="card">
+                <h3>Adicionar Jogador</h3>
+                <div class="flex-between">
+                    <p class="hint" style="margin: 0;">Importe uma ficha de personagem (JSON) ou adicione manualmente.</p>
+                    <div>
+                        <label class="btn primary">
+                            Importar Ficha (JSON)
+                            <input type="file" id="import-player-json" accept=".json" style="display: none;">
+                        </label>
+                        <button class="btn" id="add-player-manual-btn">Adicionar Manualmente</button>
+                    </div>
+                </div>
+            </div>
+            <h3 style="margin-top: 1.5rem;">Jogadores na Campanha</h3>
+            <div id="player-list"></div>
+        </div>
+
+        <!-- PANE: NPCs -->
+        <div id="npcs" class="pane">
+            <div class="card">
+                <h3 class="section-title">👤 Adicionar / Editar NPC</h3>
+                <div id="npc-form">
+                    <input type="hidden" id="npc-id">
+                    <div class="grid grid-2">
+                        <div class="form-group"><label for="npc-name">Nome</label><input type="text" id="npc-name"></div>
+                        <div class="form-group"><label for="npc-role">Função / Ocupação</label><input type="text" id="npc-role"></div>
+                    </div>
+                    <div class="form-group"><label for="npc-appearance">Aparência</label><textarea id="npc-appearance"></textarea></div>
+                    <div class="form-group"><label for="npc-personality">Personalidade</label><textarea id="npc-personality"></textarea></div>
+                    <div class="form-group"><label for="npc-notes">Notas / Ganchos de Aventura</label><textarea id="npc-notes"></textarea></div>
+                    <button class="btn primary" id="saveNpc">Salvar NPC</button>
+                    <button class="btn" id="clearNpcForm" style="display: none;">Cancelar Edição</button>
+                </div>
+            </div>
+            <h2 class="section-title" style="margin-top: 2rem;">NPCs Cadastrados</h2>
+            <input type="text" id="npc-search" placeholder="Buscar NPC..." style="margin-bottom: 1rem;">
+            <div id="npc-list"></div>
+        </div>
+
+        <!-- PANE: ATLAS -->
+        <div id="atlas" class="pane">
+            <h2 class="section-title">🌍 Atlas de Netzeroth</h2>
+            <div class="card">
+                <p class="hint">Clique em uma região para ver o estado atual e gerenciar suas anotações e nível de Corrupção. Os dados são salvos automaticamente.</p>
+                <div id="atlas-list"></div>
+            </div>
+        </div>
+
+        <!-- PANE: MAPAS -->
+        <div id="maps" class="pane">
+            <div class="card">
+                <h3 class="section-title">🗺️ Adicionar Novo Mapa</h3>
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label for="map-name">Nome do Mapa</label>
+                        <input type="text" id="map-name" placeholder="Ex: Mapa de Haravoth">
+                    </div>
+                    <div class="form-group">
+                        <label for="map-upload">Selecione uma imagem (JPG, PNG)</label>
+                        <input type="file" id="map-upload" accept="image/jpeg, image/png, image/gif">
+                    </div>
+                </div>
+                <button class="btn primary" id="addMapBtn">Adicionar Mapa</button>
+            </div>
+            <h2 class="section-title" style="margin-top: 2rem;">Mapas Salvos</h2>
+            <div class="map-grid" id="map-list"></div>
+        </div>
+
+        <!-- PANE: GERADORES -->
+        <div id="generators" class="pane">
+             <h2 class="section-title">🎲 Geradores Aleatórios</h2>
+            <div class="grid grid-2">
+                <div class="card">
+                    <div class="flex-between">
+                        <h3>Boatos e Rumores</h3>
+                        <button class="btn small" data-generator="rumors">Rolar</button>
+                    </div>
+                    <div id="rumors-result" class="result-box"></div>
+                </div>
+                <div class="card">
+                    <div class="flex-between">
+                        <h3>Complicações</h3>
+                        <button class="btn small" data-generator="complications">Rolar</button>
+                    </div>
+                    <div id="complications-result" class="result-box"></div>
+                </div>
+            </div>
+            <div class="card" style="margin-top:1.5rem">
+                <div class="flex-between">
+                    <h3>Eventos Regionais</h3>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <select id="region-select" style="width:auto;"></select>
+                        <button class="btn small" data-generator="regional">Rolar</button>
+                    </div>
+                </div>
+                 <div id="regional-result" class="result-box"></div>
+            </div>
+             <div class="card" style="margin-top:1.5rem">
+                <div class="flex-between">
+                    <h3>Gerador de Tesouros</h3>
+                    <div>
+                         <select id="treasure-tier-select" style="width:auto; margin-right: 0.5rem;">
+                            <option value="pequeno">Pequeno</option>
+                            <option value="medio">Médio</option>
+                            <option value="grande">Grande</option>
+                        </select>
+                        <button class="btn small" id="treasure-btn">Gerar</button>
+                    </div>
+                </div>
+                <div id="treasure-result" class="result-box"></div>
+            </div>
+            <div class="card" style="margin-top:1.5rem">
+                <div class="flex-between">
+                    <h3>Sorteador de NPC</h3>
+                    <button class="btn small" id="random-npc-btn">Sortear NPC</button>
+                </div>
+                <div id="random-npc-result" class="result-box"></div>
+            </div>
+            <div class="card" style="margin-top:1.5rem">
+                <h3 class="section-title">📜 Geradores Customizados</h3>
+                <div id="custom-generators-list"></div>
+                 <h3 style="margin-top:2rem;">Criar Nova Tabela</h3>
+                 <div class="form-group">
+                     <label for="custom-gen-title">Título da Tabela</label>
+                     <input type="text" id="custom-gen-title" placeholder="Ex: Encontros na Floresta">
+                 </div>
+                 <div class="form-group">
+                     <label for="custom-gen-items">Itens (um por linha)</label>
+                     <textarea id="custom-gen-items"></textarea>
+                 </div>
+                 <button class="btn primary" id="addCustomGeneratorBtn">Salvar Tabela</button>
+            </div>
+        </div>
+
+        <!-- PANE: TIMERS & RELÓGIOS -->
+        <div id="timers" class="pane">
+            <div class="grid grid-2">
+                <div class="card">
+                    <h2 class="section-title">⏱️ Timer de Cena</h2>
+                    <div id="timer-display">00:00</div>
+                    <div style="display: flex; justify-content: center; gap: 1rem;">
+                        <button id="start-timer" class="btn primary">Iniciar</button>
+                        <button id="pause-timer" class="btn">Pausar</button>
+                        <button id="reset-timer" class="btn destructive">Resetar</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2 class="section-title">🌟 Bênção e Corrupção do Grupo</h2>
+                    <div class="grid grid-2" style="align-items: center;">
+                        <div>
+                            <label>Pontos de Bênção</label>
+                            <div class="flex-between">
+                                <strong id="blessing-points" style="font-size: 2rem; color: var(--accent2);">0</strong>
+                                <div>
+                                    <button class="btn small" onclick="updateGroupPoints('blessing', 1)">+</button>
+                                    <button class="btn small" onclick="updateGroupPoints('blessing', -1)">-</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label>Pontos de Corrupção</label>
+                             <div class="flex-between">
+                                <strong id="corruption-points" style="font-size: 2rem; color: var(--danger);">0</strong>
+                                <div>
+                                    <button class="btn small" onclick="updateGroupPoints('corruption', 1)">+</button>
+                                    <button class="btn small" onclick="updateGroupPoints('corruption', -1)">-</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card" style="margin-top: 1.5rem;">
+                <h2 class="section-title">⏳ Novo Relógio</h2>
+                <div class="grid" style="grid-template-columns: 2fr 1fr auto; align-items: end; gap: 0.75rem;">
+                    <div class="form-group" style="margin:0">
+                        <label for="clock-title">Título</label>
+                        <input type="text" id="clock-title" placeholder="Ex: Fuga da masmorra">
+                    </div>
+                    <div class="form-group" style="margin:0">
+                        <label for="clock-segments">Segmentos</label>
+                        <select id="clock-segments">
+                            <option value="4">4</option>
+                            <option value="6" selected>6</option>
+                            <option value="8">8</option>
+                            <option value="12">12</option>
+                        </select>
+                    </div>
+                    <button class="btn primary" id="addClockBtn">Criar</button>
+                </div>
+            </div>
+            <h3 class="section-title" style="margin-top: 2rem;">Relógios Ativos</h3>
+            <div class="clock-grid" id="clocks-container"></div>
+        </div>
+        
+        <!-- PANE: BESTIÁRIO -->
+        <div id="bestiary" class="pane">
+            <h2 class="section-title">🐲 Bestiário</h2>
+            <div class="grid grid-2">
+                <div class="card">
+                    <h3>Criaturas Cadastradas</h3>
+                    <div class="grid" style="grid-template-columns: 1fr auto; gap: 0.5rem; margin-bottom: 1rem;">
+                        <input type="text" id="bestiary-search" placeholder="Buscar criatura...">
+                        <select id="bestiary-filter-type">
+                            <option value="all">Todos os Tipos</option>
+                        </select>
+                    </div>
+                    <div id="bestiary-main-list" style="max-height: 400px; overflow-y: auto;"></div>
+                </div>
+                <div class="card">
+                    <h3>Adicionar / Editar Criatura</h3>
+                     <input type="hidden" id="enemy-id-bestiary">
+                     <div class="form-group"><label>Nome</label><input type="text" id="enemy-name-bestiary"></div>
+                     <div class="grid grid-2">
+                        <div class="form-group"><label>Tipo</label><input type="text" id="enemy-type-bestiary" placeholder="Sombra, Fera, Humanoide..."></div>
+                        <div class="form-group"><label>Nível de Desafio (ND)</label><input type="number" id="enemy-nd-bestiary" min="0"></div>
+                     </div>
+                     <div class="grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem;">
+                         <div class="form-group"><label>HP</label><input type="number" id="enemy-hp-bestiary" min="1"></div>
+                         <div class="form-group"><label>DEF</label><input type="number" id="enemy-def-bestiary" min="0"></div>
+                         <div class="form-group"><label>Bônus de Ini.</label><input type="number" id="enemy-ini-bonus-bestiary"></div>
+                     </div>
+                     <div class="form-group"><label>Ataques/Habilidades</label><textarea id="enemy-abilities-bestiary"></textarea></div>
+                     <button class="btn primary" id="save-enemy-btn-bestiary">Salvar Criatura</button>
+                     <button class="btn" id="clear-enemy-form-btn-bestiary" style="display:none;">Cancelar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANE: ENCONTROS -->
+        <div id="encounters" class="pane">
+            <h2 class="section-title">Build Construtor de Encontros</h2>
+            <div class="grid combat-tracker-grid">
+                <div class="card">
+                    <h3>Encontro Atual</h3>
+                    <div class="form-group">
+                        <label>Nome do Encontro</label>
+                        <input type="text" id="encounter-builder-name" placeholder="Ex: Emboscada na Floresta Sombria">
+                    </div>
+                    <div id="encounter-builder-list"></div>
+                    <div id="encounter-builder-summary" class="result-box" style="margin-top: 1rem;"></div>
+                    <div style="margin-top: 1rem; display:flex; gap: 0.5rem;">
+                        <button class="btn primary" id="send-to-combat-btn">Enviar para Combate</button>
+                        <button class="btn destructive" id="clear-encounter-btn">Limpar Encontro</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>Adicionar Criaturas</h3>
+                    <p class="hint">Selecione criaturas do seu bestiário para adicionar ao encontro.</p>
+                    <div id="encounter-builder-bestiary-list" class="bestiary-list" style="max-height: 400px; overflow-y: auto;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANE: COMBATE -->
+        <div id="combat" class="pane">
+            <h2 class="section-title">⚔️ Rastreador de Combate</h2>
+            <div class="combat-tracker-grid">
+                <div class="card">
+                    <div class="flex-between">
+                        <input type="text" id="encounter-name-display" placeholder="Nome do Encontro" style="flex-grow:1;" disabled>
+                        <div style="text-align:right;">
+                            <span class="muted">Rodada:</span>
+                            <strong id="round-counter" style="font-size:1.5rem;">0</strong>
+                        </div>
+                    </div>
+                    <div style="margin-top:1rem; display:flex; gap:0.5rem; flex-wrap: wrap;">
+                         <button class="btn" id="roll-initiative-btn">Rolar Iniciativa</button>
+                         <button class="btn primary" id="next-turn-btn">Próximo</button>
+                         <button class="btn destructive" id="end-combat-btn">Encerrar Combate</button>
+                    </div>
+                    <h3 style="margin-top:1.5rem;">Participantes</h3>
+                    <div style="overflow-x: auto;">
+                        <table class="combat-list" style="width:100%;">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Ini</th>
+                                    <th>HP</th>
+                                    <th>Cond.</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="combat-participants"></tbody>
+                        </table>
+                    </div>
+                     <h4 style="margin-top:1.5rem;">Adicionar Participante Avulso</h4>
+                     <div class="grid" style="grid-template-columns: 2fr 1fr 1fr auto; gap: 0.5rem; align-items:end;">
+                        <input type="text" id="add-player-name" placeholder="Nome do Jogador/Inimigo">
+                        <input type="number" id="add-player-ini" placeholder="Ini">
+                        <input type="number" id="add-player-hp" placeholder="HP">
+                        <button class="btn" id="add-player-btn">Adicionar</button>
+                     </div>
+                     <div class="card" style="margin-top: 1.5rem;">
+                        <h3>Ferramentas de Combate Rápidas</h3>
+                        <div class="grid" style="grid-template-columns: 1fr 1fr auto; gap: 0.5rem; align-items: end;">
+                            <input type="number" id="global-action-value" placeholder="Valor (ex: -10 ou 5)">
+                            <select id="global-action-target">
+                                <option value="all">Todos</option>
+                                <option value="players">Jogadores</option>
+                                <option value="enemies">Inimigos</option>
+                            </select>
+                            <button class="btn" id="apply-global-action">Aplicar</button>
+                        </div>
+                        <p class="hint">Use um valor negativo para dano e positivo para cura.</p>
+                     </div>
+                </div>
+                <div class="card">
+                    <h3>Adicionar Inimigos do Bestiário</h3>
+                    <div class="bestiary-list" id="combat-bestiary-list" style="max-height: 400px; overflow-y: auto; margin-bottom: 1rem; border: 1px solid var(--border); padding: 0.5rem; border-radius: 12px;"></div>
+                    <button class="btn small" id="goto-bestiary-link">Gerenciar Bestiário Completo</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- PANE: ROLADOR DE DADOS -->
+        <div id="dice-roller" class="pane">
+            <h2 class="section-title">🎲 Rolador de Dados</h2>
+            <div class="card">
+                <div class="dice-roller-grid">
+                    <div class="dice-buttons">
+                        <button class="btn" data-dice="4">d4</button>
+                        <button class="btn" data-dice="6">d6</button>
+                        <button class="btn" data-dice="8">d8</button>
+                        <button class="btn" data-dice="10">d10</button>
+                        <button class="btn" data-dice="12">d12</button>
+                        <button class="btn" data-dice="20">d20</button>
+                    </div>
+                    <div>
+                        <div class="dice-result-display" id="dice-result">0</div>
+                        <div class="flex-between" style="margin-top: 1rem;">
+                            <h4 style="margin: 0;">Histórico</h4>
+                            <button class="btn small destructive" id="clear-dice-history">Limpar</button>
+                        </div>
+                        <div class="dice-history" id="dice-history"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANE: GUIA DE TESTES -->
+        <div id="tests" class="pane">
+            <h2 class="section-title">📖 Guia de Testes</h2>
+            <div class="card">
+                <h3>Sugestão de Testes</h3>
+                <p class="hint">Use esta ferramenta para decidir qual tipo de teste se encaixa melhor na cena atual.</p>
+                <div class="form-group">
+                    <label for="challenge-select">Escolha a situação:</label>
+                    <select id="challenge-select">
+                        <option value="">-- Selecione uma opção --</option>
+                        <optgroup label="Combate">
+                            <option value="attack">Realizar um ataque surpresa</option>
+                            <option value="maneuver">Realizar uma manobra (empurrar, desarmar)</option>
+                            <option value="special_ability">Usar um dom especial em combate</option>
+                        </optgroup>
+                        <optgroup label="Sobrevivência & Exploração">
+                             <option value="obstacle">Atravessar um obstáculo físico (escalar, saltar)</option>
+                            <option value="endure">Suportar uma longa jornada ou clima adverso</option>
+                            <option value="camp">Montar um acampamento seguro</option>
+                            <option value="watch">Ficar de vigia durante um descanso</option>
+                            <option value="survival">Rastrear, caçar ou se orientar na natureza</option>
+                            <option value="animal">Acalmar ou interagir com um animal</option>
+                        </optgroup>
+                        <optgroup label="Interação & Investigação">
+                            <option value="persuade">Convencer, negociar ou inspirar um NPC</option>
+                            <option value="deceive">Enganar ou intimidar um NPC</option>
+                            <option value="perception">Perceber um detalhe, armadilha ou inimigo</option>
+                            <option value="investigate">Investigar uma cena ou decifrar um enigma</option>
+                            <option value="knowledge">Lembrar de uma informação ou lenda</option>
+                            <option value="sleight">Realizar um truque de mãos, bater carteira</option>
+                        </optgroup>
+                        <optgroup label="Espiritual & Dons">
+                            <option value="corruption">Resistir à tentação da Corrupção</option>
+                            <option value="faith">Interpretar um sinal divino ou canalizar uma bênção</option>
+                            <option value="craft">Criar, consertar ou sabotar um item</option>
+                             <option value="resist">Resistir a um efeito (veneno, doença, fadiga)</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <div id="challenge-guide-content" class="guide-content"></div>
+            </div>
+             <div class="card" style="margin-top:1.5rem;">
+                <h3>Tipos de Desafio</h3>
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        <div class="accordion-title">Desafio Físico</div>
+                    </div>
+                    <div class="accordion-content guide-content">
+                        <p>Ações que envolvem força, agilidade e resistência. Ideal para cenas de ação, perseguições e combate. Testes usam <strong>FOR, AGI,</strong> ou <strong>VIG</strong>.</p>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        <div class="accordion-title">Desafio Social</div>
+                    </div>
+                    <div class="accordion-content guide-content">
+                        <p>Cenas de interação, negociação e intriga. Testes usam <strong>CAR, AST,</strong> ou <strong>SAB</strong>. O roleplay é crucial e pode conceder Vantagem.</p>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        <div class="accordion-title">Desafio Espiritual</div>
+                    </div>
+                    <div class="accordion-content guide-content">
+                        <p>Testa a fé, convicção moral e resistência à corrupção. O coração temático de Netzeroth. Testes quase sempre usam <strong>FÉ</strong>, por vezes combinado com outro atributo.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- PANE: ORDENS -->
+        <div id="orders" class="pane">
+            <h2 class="section-title">⚜️ Reputação com Ordens Livres</h2>
+            <div class="card">
+                <p class="hint">Marque o nível de favor do grupo com cada uma das Ordens Livres de Netzeroth. Suas escolhas podem abrir ou fechar portas.</p>
+                <div class="order-reputation-grid" id="orders-list">
+                    <!-- Gerado via JS -->
+                </div>
+            </div>
+        </div>
+
+
+    </main>
+
+    <!-- Map Viewer Modal -->
+    <div class="modal-overlay" id="map-modal">
+        <div class="modal-content small">
+            <h3 id="map-modal-title" class="section-title"></h3>
+            <img id="map-modal-img" src="" alt="Mapa">
+        </div>
+    </div>
+    
+    <!-- Player Edit Modal -->
+    <div class="modal-overlay" id="player-sheet-modal">
+        <div class="modal-content">
+            <h3 id="player-sheet-modal-title" class="section-title">Editar Ficha do Jogador</h3>
+            <input type="hidden" id="edit-player-id">
+            
+            <div class="tabs" id="player-sheet-tabs-container">
+                 <button class="tab active" data-pane="cabeçalho">Cabeçalho</button>
+                 <button class="tab" data-pane="indicadores">Indicadores</button>
+                 <button class="tab" data-pane="atributos">Atributos</button>
+                 <button class="tab" data-pane="skills">Skills</button>
+                 <button class="tab" data-pane="inventario">Inventário</button>
+                 <button class="tab" data-pane="lore">Lore</button>
+            </div>
+
+            <div id="player-sheet-panes-container">
+                <div class="pane active" data-pane-content="cabeçalho">
+                    <div class="grid grid-2">
+                        <div class="form-group"><label>Nome do Personagem</label><input type="text" data-path="nome"></div>
+                        <div class="form-group"><label>Jogador</label><input type="text" data-path="jogador"></div>
+                        <div class="form-group"><label>Classe</label><input type="text" data-path="classe"></div>
+                        <div class="form-group"><label>Nível</label><input type="number" data-path="nivel"></div>
+                    </div>
+                </div>
+                <div class="pane" data-pane-content="indicadores">
+                    <div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 0.75rem;">
+                        <div class="form-group"><label>PV Atual</label><input type="number" data-path="recursos.pv.cur"></div>
+                        <div class="form-group"><label>PV Máximo</label><input type="number" data-path="recursos.pv.max"></div>
+                        <div class="form-group"><label>Corrupção</label><input type="number" data-path="recursos.corrupcao"></div>
+                        <div class="form-group"><label>PE Atual</label><input type="number" data-path="recursos.pe.cur"></div>
+                        <div class="form-group"><label>PE Máximo</label><input type="number" data-path="recursos.pe.max"></div>
+                        <div class="form-group"></div>
+                        <div class="form-group"><label>PA Atual</label><input type="number" data-path="recursos.pa.cur"></div>
+                        <div class="form-group"><label>PA Máximo</label><input type="number" data-path="recursos.pa.max"></div>
+                    </div>
+                </div>
+                <div class="pane" data-pane-content="atributos">
+                     <div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: 0.75rem;">
+                        <div class="form-group"><label>FOR</label><input type="number" data-path="atributos.FOR"></div>
+                        <div class="form-group"><label>AGI</label><input type="number" data-path="atributos.AGI"></div>
+                        <div class="form-group"><label>VIG</label><input type="number" data-path="atributos.VIG"></div>
+                        <div class="form-group"><label>AST</label><input type="number" data-path="atributos.AST"></div>
+                        <div class="form-group"><label>SAB</label><input type="number" data-path="atributos.SAB"></div>
+                        <div class="form-group"><label>CAR</label><input type="number" data-path="atributos.CAR"></div>
+                        <div class="form-group"><label>FÉ</label><input type="number" data-path="atributos.FE"></div>
+                     </div>
+                </div>
+                <div class="pane" data-pane-content="skills">
+                     <div id="edit-player-skills-list"></div>
+                     <button class="btn small" id="add-skill-to-player-btn">+ Adicionar Skill</button>
+                </div>
+                <div class="pane" data-pane-content="inventario">
+                     <div class="form-group"><label>Dracmas</label><input type="number" data-path="inventario.dracmas"></div>
+                     <h4>Itens</h4>
+                     <div id="edit-player-inventory-list"></div>
+                     <button class="btn small" id="add-item-to-player-btn">+ Adicionar Item</button>
+                </div>
+                 <div class="pane" data-pane-content="lore">
+                     <div class="form-group"><label>Origem</label><textarea data-path="historia.origem"></textarea></div>
+                     <div class="form-group"><label>Votos ou Propósitos</label><textarea data-path="historia.votos"></textarea></div>
+                </div>
+            </div>
+             <div style="margin-top: 1rem; display: flex; justify-content: flex-end; gap: 0.5rem;">
+                <button id="cancel-player-sheet-edit" class="btn">Cancelar</button>
+                <button id="save-player-sheet-edit" class="btn primary">Salvar Alterações</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- DATA ---
+        const challengeGuideData = {
+            attack: `<h4>Desafio: Realizar Ataque Surpresa</h4><p>Para pegar um inimigo desprevenido e ganhar a vantagem inicial no combate.</p><p><strong>Atributo Principal:</strong> AGI.</p><p><strong>Skills Sugeridas:</strong> Furtividade.</p><p><strong>DF Sugerida:</strong> Teste resistido contra a Percepção passiva do alvo. Um sucesso garante Vantagem no primeiro ataque.</p>`,
+            special_ability: `<h4>Desafio: Usar Dom Especial em Combate</h4><p>Para canalizar um poder da fé ou da criação sob a pressão da batalha.</p><p><strong>Atributo Principal:</strong> FÉ ou SAB (dependendo da classe, ex: Místico ou Curandeiro).</p><p><strong>Skills Sugeridas:</strong> Canalização de Bênçãos, Liturgia.</p><p><strong>DF Sugerida:</strong> A DF pode ser a DEF do alvo (se for um "ataque" espiritual) ou uma DF fixa (13 a 18) se o efeito for em área ou em si mesmo, dependendo da complexidade.</p>`,
+            maneuver: `<h4>Desafio: Realizar Manobra em Combate</h4><p>Para tentativas de alterar o estado do combate sem causar dano direto.</p><p><strong>Atributo Principal:</strong> FOR (para empurrar, agarrar) ou AGI (para desarmar, derrubar com uma rasteira).</p><p><strong>Skills Sugeridas:</strong> Briga, Acrobacia.</p><p><strong>DF Sugerida:</strong> Teste resistido contra o FOR ou AGI do alvo.</p>`,
+            endure: `<h4>Desafio: Suportar Jornada Adversa</h4><p>Para longas marchas, clima extremo ou privação de recursos.</p><p><strong>Atributo Principal:</strong> VIG.</p><p><strong>Skills Sugeridas:</strong> Resistência, Marcha Forçada.</p><p><strong>DF Sugerida:</strong> 10 (caminhada longa) a 20 (tempestade de cinzas em Ashkar).</p>`,
+            camp: `<h4>Desafio: Montar Acampamento Seguro</h4><p>Define a qualidade do descanso do grupo.</p><p><strong>Atributo Principal:</strong> SAB.</p><p><strong>Skills Sugeridas:</strong> Sobrevivência.</p><p><strong>DF Sugerida:</strong> 10 (local seguro) a 18 (território hostil e exposto). Uma falha pode resultar em um descanso ruim ou um encontro noturno.</p>`,
+            watch: `<h4>Desafio: Ficar de Vigia</h4><p>Para perceber perigos enquanto o resto do grupo descansa.</p><p><strong>Atributo Principal:</strong> SAB.</p><p><strong>Skills Sugeridas:</strong> Percepção.</p><p><strong>DF Sugerida:</strong> Teste resistido contra a Furtividade do perigo que se aproxima, ou DF 15 para notar eventos sutis.</p>`,
+            obstacle: `<h4>Desafio: Atravessar Obstáculo Físico</h4><p>Ideal para ações de força bruta ou agilidade.</p><p><strong>Atributo Principal:</strong> FOR (para quebrar, empurrar) ou AGI (para escalar, saltar, se equilibrar).</p><p><strong>Skills Sugeridas:</strong> Atletismo, Acrobacia.</p><p><strong>DF Sugerida:</strong> 10 (rotineiro) a 20 (muito difícil).</p>`,
+            resist: `<h4>Desafio: Resistir a um Efeito</h4><p>Usado quando um personagem é alvo de um efeito adverso contínuo.</p><p><strong>Atributo Principal:</strong> VIG.</p><p><strong>Skills Sugeridas:</strong> Fortitude, Resistência.</p><p><strong>DF Sugerida:</strong> Definida pela fonte do efeito (ex: Veneno de Aranha Gigante DF 15).</p>`,
+            persuade: `<h4>Desafio: Convencer, Negociar ou Inspirar</h4><p>Cenas de interação social onde o objetivo é positivo ou neutro.</p><p><strong>Atributo Principal:</strong> CAR.</p><p><strong>Skills Sugeridas:</strong> Persuasão, Performance, Empatia.</p><p><strong>DF Sugerida:</strong> 10 (NPC amigável) a 25 (missão impossível).</p>`,
+            deceive: `<h4>Desafio: Enganar ou Intimidar</h4><p>Interações sociais com objetivo de manipulação ou coerção.</p><p><strong>Atributo Principal:</strong> CAR (Intimidação) ou AST (Enganação).</p><p><strong>Skills Sugeridas:</strong> Intimidação, Enganação.</p><p><strong>DF Sugerida:</strong> Teste resistido contra a SAB (Empatia) do alvo ou DF fixa baseada na plausibilidade.</p>`,
+            perception: `<h4>Desafio: Perceber um Detalhe</h4><p>Quando os jogadores estão procurando ativamente por algo ou para evitar surpresas.</p><p><strong>Atributo Principal:</strong> SAB.</p><p><strong>Skills Sugeridas:</strong> Percepção.</p><p><strong>DF Sugerida:</strong> Teste passivo (10 + bônus do personagem) contra a Furtividade do inimigo, ou DF fixa (15 para uma armadilha bem escondida).</p>`,
+            investigate: `<h4>Desafio: Investigar uma Cena</h4><p>Para conectar pistas, entender mecanismos ou resolver enigmas.</p><p><strong>Atributo Principal:</strong> AST.</p><p><strong>Skills Sugeridas:</strong> Investigação, Estratégia.</p><p><strong>DF Sugerida:</strong> Varia com a complexidade, de 10 (óbvio) a 25 (arcano).</p>`,
+            survival: `<h4>Desafio: Sobrevivência</h4><p>Para se virar em ambientes selvagens.</p><p><strong>Atributo Principal:</strong> SAB.</p><p><strong>Skills Sugeridas:</strong> Sobrevivência.</p><p><strong>DF Sugerida:</strong> 10 (floresta temperada) a 20 (deserto escaldante ou tundra congelada).</p>`,
+            corruption: `<h4>Desafio: Resistir à Corrupção</h4><p>Momentos de tentação ou exposição a uma fonte de poder sombrio.</p><p><strong>Atributo Principal:</strong> FÉ.</p><p><strong>Skills Sugeridas:</strong> Resistência à Corrupção.</p><p><strong>DF Sugerida:</strong> 15 (sussurro sutil) a 25 (contato direto com artefato do Usurpador).</p>`,
+            faith: `<h4>Desafio: Interpretar Sinais ou Canalizar Fé</h4><p>Para entender mensagens divinas ou usar poderes sagrados sob pressão.</p><p><strong>Atributo Principal:</strong> FÉ ou SAB.</p><p><strong>Skills Sugeridas:</strong> Liturgia, Canalização de Bênçãos.</p><p><strong>DF Sugerida:</strong> 10 (sinal claro) a 20 (visão complexa e metafórica).</p>`,
+            craft: `<h4>Desafio: Criar ou Reparar Item</h4><p>Para fabricar, consertar ou sabotar equipamentos.</p><p><strong>Atributo Principal:</strong> AST.</p><p><strong>Skills Sugeridas:</strong> Ofícios (não listado, mas implícito), Investigação (para entender mecanismos).</p><p><strong>DF Sugerida:</strong> 10 (reparo simples) a 25 (forjar item mágico de luz).</p>`,
+            knowledge: `<h4>Desafio: Lembrar de uma Informação</h4><p>Para recordar lendas, história, fraquezas de monstros ou fatos obscuros.</p><p><strong>Atributo Principal:</strong> AST ou SAB.</p><p><strong>Skills Sugeridas:</strong> Conhecimento (implícito), Liturgia (para temas religiosos).</p><p><strong>DF Sugerida:</strong> 10 (conhecimento comum) a 30 (segredo perdido no tempo).</p>`,
+            sleight: `<h4>Desafio: Truque de Mãos</h4><p>Para ações que exigem destreza manual fina e discrição, como bater carteira ou plantar um objeto.</p><p><strong>Atributo Principal:</strong> AGI.</p><p><strong>Skills Sugeridas:</strong> Prestidigitação.</p><p><strong>DF Sugerida:</strong> Teste resistido contra a Percepção passiva do alvo.</p>`,
+            animal: `<h4>Desafio: Interagir com Animais</h4><p>Para acalmar uma fera, treinar uma montaria ou entender as intenções de um animal.</p><p><strong>Atributo Principal:</strong> SAB ou CAR.</p><p><strong>Skills Sugeridas:</strong> Empatia, Sobrevivência.</p><p><strong>DF Sugerida:</strong> 10 (animal doméstico) a 20 (besta mítica hostil).</p>`
+        };
+
+        const dfTableHTML = `
+            <h4 style="margin-top:2rem;">Tabela de Dificuldade (DF) de Referência</h4>
+            <table><thead><tr><th>DF</th><th>Tipo</th><th>Exemplo</th></tr></thead><tbody>
+            <tr><td>5</td><td>Muito Fácil</td><td>Andar por terreno seguro</td></tr>
+            <tr><td>10</td><td>Fácil/Média</td><td>Subir uma colina, conversar com um aldeão</td></tr>
+            <tr><td>15</td><td>Difícil</td><td>Resolver um enigma complexo, saltar um abismo</td></tr>
+            <tr><td>20</td><td>Muito Difícil</td><td>Resistir a um veneno forte, atravessar terreno hostil</td></tr>
+            <tr><td>25</td><td>Épico</td><td>Derrubar um golem, realizar um feito extraordinário</td></tr>
+            <tr><td>30</td><td>Lendário</td><td>Proezas míticas, quase impossíveis</td></tr>
+            </tbody></table>`;
+        
+        const initialData = {
+            diary: [],
+            players: [],
+            npcs: [
+                { id: 'npc-1', name: 'Elonir, o Velho Sábio-Profeta', role: 'Vidente e intérprete de sonhos', appearance: 'Homem muito idoso, barba branca até o peito, olhos enevoados mas cheios de luz.', personality: 'Fala por parábolas, às vezes responde com perguntas.', notes: 'Guia espiritual, provoca dilemas morais, pode dar uma bênção simbólica (vantagem única em FÉ).' },
+                { id: 'npc-2', name: 'Mira, a Viajante das Estradas', role: 'Mensageira, sempre com notícias frescas', appearance: 'Jovem com capa poeirenta, carregando cartas, mapas e histórias.', personality: 'Alegre, curiosa, fala rápido demais.', notes: 'Oferece ganchos de aventura (rumores, cartas misteriosas, missões urgentes).' },
+                { id: 'npc-3', name: 'Drako, o Ferreiro', role: 'Conserta armas, forja ferramentas', appearance: 'Forte, mãos queimadas de forja, tatuagens antigas nos braços.', personality: 'Direto, de poucas palavras, mas leal.', notes: 'Suporte prático — sua presença dá chance de renovar recursos no campo.' },
+                { id: 'npc-4', name: 'Seliah, a Curandeira Nômade', role: 'Curandeira herbalista', appearance: 'Veste roupas coloridas com cintos cheios de frascos e ervas.', personality: 'Acolhedora, mas firme; às vezes repreende com carinho.', notes: 'Pode oferecer cura básica, mas sempre pede algo em troca (ajuda ou promessa).' },
+                { id: 'npc-5', name: 'Tovran, o Mercador Astuto', role: 'Comerciante e oportunista', appearance: 'Roupas caras mas empoeiradas, carregando uma carroça.', personality: 'Fala mansa, mas sempre busca lucro.', notes: 'Tem itens úteis, mas preços injustos; pode esconder informações. Teste social (CAR/Astúcia) para negociar.' },
+                { id: 'npc-6', name: 'Ruthiel, a Cantora Itinerante', role: 'Artista, guardiã de histórias antigas', appearance: 'Jovem com alaúde prateado, capa marcada por poeira das estradas.', personality: 'Poética, nostálgica, parece saber mais do que diz.', notes: 'Seu canto pode inspirar. Introduz lendas e memórias de Elyon.' },
+                { id: 'npc-7', name: 'Kael, o Errante Redimido', role: 'Ex-guerreiro buscando redenção', appearance: 'Armadura rachada, pele pálida, cicatrizes da corrupção.', personality: 'Silencioso, carregado de culpa, mas bondoso em atos.', notes: 'Dilema moral — será confiável ou pode recair?' },
+                { id: 'npc-8', name: 'Edena, a Peregrina Jovem', role: 'Novata Portadora do Selo', appearance: 'Jovem insegura, mas com um medalhão que brilha em momentos de tensão.', personality: 'Cheia de dúvidas, mas determinada a aprender.', notes: 'Reflexo dos jogadores — se a guiarem bem, ela floresce; se a abandonarem, pode ser corrompida.' },
+                { id: 'npc-9', name: 'O Pescador Sem Nome', role: 'Guia improvisado em rios ou mares', appearance: 'Homem de meia-idade, roupas molhadas, cheiro de sal.', personality: 'Fala em enigmas, mas sabe ler os sinais do mar.', notes: 'Introduz perigos de Yam Talorah ou traz presságios de tormentas.' },
+                { id: 'npc-10', name: 'Nurian, a Guardiã da Ponte', role: 'Vigia uma ponte antiga entre duas regiões', appearance: 'Guerreira idosa, armadura marcada por batalhas, ainda firme.', personality: 'Protetora, desconfiada de estranhos.', notes: 'Pode dar acesso a caminhos seguros se convencida (teste de Persuasão ou demonstração de fé).' },
+                { id: 'npc-11', name: 'Alon, o Louco das Praças', role: 'Pregador de rua, tido como insano', appearance: 'Roupas rasgadas, olhos brilhando em êxtase.', personality: 'Mistura palavras desconexas com profecias reais.', notes: 'Fonte de visões inesperadas; o que parece delírio pode ser revelação.' },
+                { id: 'npc-12', name: 'Iva, a Criança do Vento', role: 'Menina órfã que aparece em diferentes vilas', appearance: 'Cabelos claros, sempre carregando uma pipa ou um sino.', personality: 'Inocente, mas fala de Elyon como se O conhecesse.', notes: 'Traz esperança em momentos sombrios; pode dar um aviso singelo e profético.' },
+                { id: 'npc-13', name: 'Killian, o Caçador Silencioso', role: 'Guia das florestas', appearance: 'Homem robusto, tatuagens de animais no corpo.', personality: 'Poucas palavras, olha mais do que fala.', notes: 'Conduz o grupo por atalhos; às vezes traz más notícias (caça corrompida, sinais de escuridão).' },
+                { id: 'npc-14', name: 'Samya, a Guardiã dos Códigos', role: 'Bibliotecária errante / Monja guardiã de escritos sagrados', appearance: 'Véu simples, carrega livros em uma mochila reforçada.', personality: 'Calma, paciente, mas inflexível quando o saber está em risco.', notes: 'Revela conhecimento esquecido, mas sempre exige que seja usado com sabedoria.' },
+                { id: 'npc-15', name: 'Ossian, o Bardo Cego', role: 'Músico viajante, toca harpa', appearance: 'Olhos leitosos, expressão serena, roupas gastas.', personality: 'Fala por canções e metáforas.', notes: 'Narra histórias antigas (lore) em forma de música, pode inspirar o grupo ou guardar segredos.' },
+                { id: 'npc-16', name: 'Hadriel, o Exilado', role: 'Nobre destituído, agora andarilho', appearance: 'Mantos rasgados, mas ainda porta um anel de família.', personality: 'Orgulhoso, mas quebrado; deseja recuperar a honra.', notes: 'Pode servir como contato com a alta nobreza ou dilema sobre justiça/redenção.' },
+                { id: 'npc-17', name: 'Ner, a Pastora de Rebanhos', role: 'Camponesa simples', appearance: 'Jovem morena, cajado de madeira, cercada de ovelhas.', personality: 'Humilde, prática, de coração bondoso.', notes: 'Símbolo de paz; pode abrigar heróis fugidos ou testemunhar algo crucial.' },
+                { id: 'npc-18', name: 'Ezren, o Guardião da Ponte das Sombras', role: 'Ex-cavaleiro jurado, agora vigia uma ruína', appearance: 'Armadura quebrada, capa esvoaçante, sempre com uma lanterna acesa.', personality: 'Sombrio, mas honrado.', notes: 'Pode desafiar heróis a provarem sua fé ou coragem antes de cruzarem.' },
+                { id: 'npc-19', name: 'Levana, a Mercadora de Sonhos', role: 'Vendedora de artefatos estranhos', appearance: 'Mulher de meia-idade, sorriso astuto, olhos pintados.', personality: 'Ambígua — parece saber mais do que devia.', notes: 'Vende itens curiosos que podem ser bênção ou maldição.' },
+                { id: 'npc-20', name: 'Uri, o Ancião Errante', role: 'Andarilho que aconselha o grupo', appearance: 'Barba curta, olhos cansados, veste-se como monge peregrino.', personality: 'Sábio, mas fala pouco.', notes: 'Pode surgir em cruzamentos para aconselhar brevemente, como um "enviado de Elyon".' },
+            ],
+            maps: [],
+            generators: {
+                rumors: [
+                    "O Usurpador ergueu um forte nas Terras Queimadas.", "Um artefato de luz foi visto em um leilão secreto em Neharim.",
+                    "A Irmandade de Lumenar procura heróis para uma missão de resgate.", "Criaturas estranhas rondam as margens do Mar da Canção.",
+                    "Um Guardião de Elyon desapareceu na fronteira de Metsudoth.", "O deserto de Qadmiar revelou uma cidade soterrada.",
+                    "Um comerciante jura ter visto o Jardim Perdido.", "As Sombras se infiltraram em uma das Ordens Livres.",
+                    "Dizem que os Vigias de Qadmiar encontraram uma passagem secreta sob as areias que leva a uma biblioteca esquecida.",
+                    "Um navio do Conclave dos Navegantes naufragou perto de Yam Talorah, e sua carga era um artefato que acalmava as 'Canções' do mar.",
+                    "A Ordem do Escudo de Pedra está recrutando em Metsudoth. Parece que uma horda de Sombras se aproxima da fronteira.",
+                    "Ouvi dizer que um Errante, marcado pelas sombras, foi visto curando um campo em Haravoth com um toque de luz.",
+                    "O Usurpador prometeu poder a um nobre de Neharim em troca de rotas comerciais para suas tropas."
+                ],
+                complications: [
+                    "Um aliado ou NPC importante é ferido ou capturado.", "O terreno desmorona ou se torna instável.",
+                    "O clima muda drasticamente em minutos.", "Um inimigo recebe reforços imprevistos.",
+                    "Um objeto essencial se perde ou quebra.", "Um mal-entendido cria hostilidade imediata.",
+                    "Uma tempestade espiritual se manifesta, forçando um teste de FÉ para não ficar desorientado.",
+                    "O Selo do Rei de um dos heróis começa a brilhar intensamente, atraindo atenção indesejada.",
+                    "Um item mundano na mochila de um personagem se revela ser um 'Item Maculado' latente, sussurrando tentações.",
+                    "Um espírito da natureza aparece, irritado com a presença do grupo, e exige uma oferenda para permitir passagem.",
+                    "O grupo encontra um antigo totem de Elyon que foi profanado. Deixá-lo assim pode aumentar a Corrupção na região."
+                ],
+                regional: {
+                    Haravoth: ["Uma caravana nômade pede escolta.", "Uma manada de animais assustados atravessa a trilha.", "Uma Vinha Sussurrante tenta enganar os viajantes.", "Uma aldeia prepara uma festa tradicional e convida o grupo.", "Um mensageiro ferido da Ordem do Escudo de Pedra é encontrado.", "Um artefato de uma antiga batalha é revelado após uma forte chuva."],
+                    Ashkar: ["Uma tempestade de cinzas força o grupo a procurar abrigo.", "Criaturas corrompidas emergem de fendas no solo.", "Restos de uma armadura brilhante são encontrados entre ruínas.", "Sussurros distantes e lamentos são ouvidos no vento.", "Uma fenda no chão revela um fluxo de magma que bloqueia o caminho.", "Um sobrevivente endurecido oferece um mapa para um oásis escondido, por um preço."],
+                    Neveloth: ["Sinos distantes tocam um padrão de aviso, mas a aldeia parece deserta.", "A névoa se adensa e os personagens ouvem vozes sussurrando seus nomes.", "Uma ponte de cordas essencial para atravessar um desfiladeiro está rompida.", "Um monge eremita pede ajuda para lidar com uma criatura em sua caverna.", "Um viajante paralisado de medo afirma ter visto os 'Cavaleiros de Cinza' na bruma.", "Os 'Seres da Névoa' surgem para guiar silenciosamente os personagens por um atalho."],
+                    Metsudoth: ["O alarme de cerco soa e os portões se fecham.", "Um capitão da Ordem do Escudo de Pedra é acusado de traição.", "Uma patrulha de fronteira não retornou; uma recompensa é oferecida.", "Um 'Guardião Retorcido' está tentando derrubar uma seção da muralha.", "Um torneio de campeões é anunciado na cidade.", "Espiões do Usurpador são descobertos, e uma perseguição se inicia pelos parapeitos."],
+                    Neharim: ["Duas casas mercantis rivais estão à beira de uma guerra.", "Um diplomata importante é envenenado durante um banquete.", "Um dragão do rio bloqueia uma rota comercial vital.", "Uma caravana misteriosa é atacada por contrabandistas.", "Um contrato místico é quebrado, afetando a prosperidade local.", "Um leilão secreto em uma barcaça oferece um artefato de luz."],
+                    Qadmiar: ["Uma tempestade de areia revela ruínas antigas.", "Uma rota de peregrinação foi profanada por Sombras.", "O grupo encontra uma caravana nômade sitiada por criaturas.", "Miragens constantes testam a fé e a sanidade do grupo.", "Um falcão solar gigante oferece orientação.", "A silhueta de uma cidade soterrada aparece no horizonte."],
+                    "Yam Talorah": ["A 'Canção' do mar se torna um lamento dissonante e criaturas atacam navios.", "Uma tempestade sobrenatural causa um naufrágio em uma ilha não mapeada.", "Uma serpente de cristal gigante exige um favor para passagem segura.", "O Conclave dos Navegantes contrata o grupo para mapear corais venenosos.", "Um navio fantasma assombra uma rota comercial.", "Algas cantantes guiam o navio para uma enseada secreta com uma profecia."],
+                    "Gan-Eved": ["A trilha que o grupo seguia desaparece e a floresta se reorganiza.", "Um guardião raro da floresta é encontrado ferido por uma flecha sombria.", "O grupo encontra uma clareira com os lendários Frutos de Gan-Eved.", "Uma seção do jardim está morrendo, sufocada por plantas corrompidas.", "O guardião lendário do jardim impõe uma prova de coração para avançar.", "Uma cachoeira é tão bela que testa a força de vontade para não abandonar a missão."]
+                },
+                treasures: {
+                    pequeno: ["Um saco com 2d10 Dracmas.", "Uma Poção de Vida.", "Um kit de ervas.", "Um mapa regional desgastado.", "Uma Adaga de Rapina bem conservada."],
+                    medio: ["Um baú com 3d20+20 Dracmas.", "Um frasco de Óleo da Oliveira Vigia.", "Um saquinho com Pólen da Flor do Sol.", "Um Peitoral de Couro de Haravoth.", "Um Anel de Névoa (Item Maculado)."],
+                    grande: ["Uma arca com 5d100 Dracmas e algumas gemas.", "Um Fruto de Gan-Eved perfeitamente maduro.", "Uma ampola com uma Lágrima da Aurora.", "Uma Cota de Malha de Neveloth com o brasão de um herói esquecido.", "A Lâmina de Cinzas (Item Maculado).", "Uma promissória de favor de um líder da Fraternidade de Neharim."]
+                },
+                custom: []
+            },
+            clocks: [],
+            bestiary: [],
+            combat: { participants: [], round: 0, currentTurn: -1, name: "" },
+            ordersReputation: {},
+            encounters: { current: { name: '', creatures: [] }},
+            groupPoints: { blessing: 0, corruption: 0 },
+            atlas: {}
+        };
+        let appData;
+
+        // Timer variables
+        let timerInterval = null;
+        let timerSeconds = 0;
+
+        const $ = (selector) => document.querySelector(selector);
+        const $$ = (selector) => document.querySelectorAll(selector);
+
+        function generateId() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 9); }
+        function saveState() { localStorage.setItem('netzerothGMData', JSON.stringify(appData)); }
+        function loadState() {
+            const savedData = localStorage.getItem('netzerothGMData');
+            appData = savedData ? JSON.parse(savedData) : JSON.parse(JSON.stringify(initialData));
+            // Migration for new features
+            if (!appData.players) appData.players = [];
+            if (!appData.generators.custom) appData.generators.custom = [];
+            if (!appData.clocks) appData.clocks = [];
+            if (!appData.bestiary) appData.bestiary = [];
+            if (!appData.combat) appData.combat = { participants: [], round: 0, currentTurn: -1, name: "" };
+            if (!appData.generators.treasures) appData.generators.treasures = initialData.generators.treasures; 
+            if (!appData.ordersReputation) appData.ordersReputation = {};
+            if (!appData.encounters) appData.encounters = { current: { name: '', creatures: [] }};
+            if (!appData.groupPoints) appData.groupPoints = { blessing: 0, corruption: 0 };
+            if (!appData.atlas) appData.atlas = {};
+        }
+
+        function handleTabClick(e) {
+            if (!e.target.classList.contains('tab')) return;
+            $$('.tab').forEach(t => t.classList.remove('active'));
+            $$('.pane').forEach(p => p.classList.remove('active'));
+            e.target.classList.add('active');
+            $(`#${e.target.dataset.tab}`).classList.add('active');
+        }
+
+        // --- DIARY ---
+        function renderDiary() {
+            const list = $('#diary-list');
+            list.innerHTML = !appData.diary.length ? `<p class="muted">Nenhuma entrada no diário ainda.</p>` : '';
+            appData.diary.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(entry => {
+                const item = document.createElement('div');
+                item.className = 'accordion-item';
+                item.innerHTML = `
+                    <div class="accordion-header" data-id="${entry.id}">
+                        <div>
+                            <div class="accordion-title">${entry.title || 'Sessão Sem Título'}</div>
+                            <small class="muted">${entry.date ? new Date(entry.date + 'T00:00:00').toLocaleDateString('pt-BR') : 'Sem data'}</small>
+                        </div>
+                        <div class="accordion-actions">
+                            <button class="btn small edit-diary" data-id="${entry.id}">Editar</button>
+                            <button class="btn small destructive delete-diary" data-id="${entry.id}">Excluir</button>
+                        </div>
+                    </div>
+                    <div class="accordion-content">
+                        <p>${entry.summary.replace(/\n/g, '<br>') || 'Nenhum resumo.'}</p>
+                    </div>`;
+                list.appendChild(item);
+            });
+        }
+        function handleDiaryForm(e) {
+            e.preventDefault();
+            const id = $('#diary-id').value;
+            const entryData = { title: $('#diary-title').value, date: $('#diary-date').value, summary: $('#diary-summary').value };
+            if (id) {
+                const index = appData.diary.findIndex(item => item.id === id);
+                appData.diary[index] = { ...appData.diary[index], ...entryData };
+            } else {
+                entryData.id = generateId();
+                appData.diary.push(entryData);
+            }
+            clearDiaryForm(); renderDiary(); saveState();
+        }
+        function clearDiaryForm() { $('#diary-form').reset(); $('#diary-id').value = ''; $('#clearDiaryForm').style.display = 'none'; }
+        function handleDiaryListClick(e) {
+            const target = e.target; const id = target.dataset.id;
+            if (target.classList.contains('edit-diary')) {
+                const entry = appData.diary.find(item => item.id === id);
+                $('#diary-id').value = entry.id; $('#diary-title').value = entry.title;
+                $('#diary-date').value = entry.date; $('#diary-summary').value = entry.summary;
+                $('#clearDiaryForm').style.display = 'inline-block';
+                target.closest('.card, .pane').scrollIntoView({ behavior: 'smooth' });
+            } else if (target.classList.contains('delete-diary')) {
+                if (confirm('Tem certeza?')) { appData.diary = appData.diary.filter(item => item.id !== id); renderDiary(); saveState(); }
+            } else if (target.closest('.accordion-header')) { target.closest('.accordion-item').classList.toggle('open'); }
+        }
+        
+        // --- PLAYERS ---
+        function renderPlayers() {
+            const list = $('#player-list');
+            list.innerHTML = !appData.players.length ? `<p class="muted">Nenhuma ficha de jogador importada.</p>` : '';
+            appData.players.forEach(player => {
+                const item = document.createElement('div');
+                item.className = 'accordion-item';
+                const data = player.data || {};
+                const indicators = data.recursos || {};
+                const pv = indicators.pv || {cur: '?', max: '?'};
+                const pe = indicators.pe || {cur: '?', max: '?'};
+                const pa = indicators.pa || {cur: '?', max: '?'};
+
+                item.innerHTML = `
+                    <div class="accordion-header">
+                        <div>
+                            <div class="accordion-title">${data.nome || 'Personagem Sem Nome'}</div>
+                            <small class="muted">${data.classe || 'Sem Classe'} - Nível ${data.nivel || '?'}</small>
+                        </div>
+                        <div class="accordion-actions">
+                            <button class="btn small edit-player" data-id="${player.id}">Editar Ficha</button>
+                            <button class="btn small destructive delete-player" data-id="${player.id}">Excluir</button>
+                        </div>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="grid grid-2">
+                            <div>
+                                <h4>Indicadores</h4>
+                                <p><strong>PV:</strong> ${pv.cur}/${pv.max} | <strong>PE:</strong> ${pe.cur}/${pe.max} | <strong>PA:</strong> ${pa.cur}/${pa.max}</p>
+                                <p><strong>Corrupção:</strong> ${indicators.corrupcao || 0}</p>
+                            </div>
+                            <div>
+                                <h4>Atributos</h4>
+                                <p>${Object.entries(data.atributos || {}).map(([key, val]) => `<strong>${key}:</strong> ${val}`).join(' | ')}</p>
+                            </div>
+                        </div>
+                        <div>
+                            <h4>Skills</h4>
+                            ${(data.skills && data.skills.length) ? `
+                            <table class="player-sheet-table">
+                                <thead><tr><th>Nome</th><th>Atributo</th><th>Total</th></tr></thead>
+                                <tbody>${data.skills.map(s => `<tr><td>${s.name}</td><td>${s.attr}</td><td>${(Math.floor(((data.atributos[s.attr] || 10) - 10) / 2)) + (s.trained ? 2 : 0) + (s.specialized ? 4 : 0) + (s.extra || 0)}</td></tr>`).join('')}</tbody>
+                            </table>` : '<p class="muted">Nenhuma skill registrada.</p>'}
+                        </div>
+                        <div>
+                            <h4>Inventário</h4>
+                            <p><strong>Dracmas:</strong> ${data.inventario ? data.inventario.dracmas : 0}</p>
+                            <ul>
+                                ${(data.inventario && data.inventario.items) ? data.inventario.items.map(i => `<li>${i.name} (Qtd: ${i.quantity || 1})</li>`).join('') : '<li class="muted">Inventário vazio.</li>'}
+                            </ul>
+                        </div>
+                         <div>
+                            <h4>Lore</h4>
+                            <p><strong>Origem:</strong> ${data.historia?.origem || 'N/A'}</p>
+                            <p><strong>Votos:</strong> ${data.historia?.votos || 'N/A'}</p>
+                        </div>
+                    </div>`;
+                list.appendChild(item);
+            });
+        }
+        
+        function handlePlayerListClick(e) {
+            const target = e.target; const id = target.dataset.id;
+            if (target.classList.contains('delete-player')) {
+                if (confirm('Tem certeza que deseja excluir esta ficha de jogador?')) {
+                    appData.players = appData.players.filter(p => p.id !== id);
+                    renderPlayers();
+                    saveState();
+                }
+            } else if (target.classList.contains('edit-player')) {
+                openPlayerEditorModal(id);
+            }
+            else if (target.closest('.accordion-header')) {
+                target.closest('.accordion-item').classList.toggle('open');
+            }
+        }
+        
+        function handleImportPlayerJson(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    const newPlayer = {
+                        id: generateId(),
+                        data: importedData
+                    };
+                    appData.players.push(newPlayer);
+                    renderPlayers();
+                    saveState();
+                    alert(`Ficha de "${importedData.nome || 'personagem'}" importada com sucesso!`);
+                } catch (err) {
+                    alert("Erro ao ler o arquivo. Verifique se é um JSON de ficha de personagem válido.");
+                } finally {
+                    event.target.value = '';
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function handleAddPlayerManual() {
+            const name = prompt("Digite o nome do personagem:", "Novo Personagem");
+            if (name) {
+                const newPlayer = {
+                    id: generateId(),
+                    data: { nome: name, classe: "Não definido", nivel: 1, atributos: {FOR:10, AGI:10, VIG:10, AST:10, SAB:10, CAR:10, FE:10}, recursos: {pv:{cur:10, max:10}, pe:{cur:10, max:10}, pa:{cur:10, max:10}, corrupcao: 0}, skills: [], inventario: { dracmas: 0, items:[]}, historia: {origem:"", votos:""} }
+                };
+                appData.players.push(newPlayer);
+                renderPlayers();
+                saveState();
+            }
+        }
+        
+        function openPlayerEditorModal(id) {
+            const player = appData.players.find(p => p.id === id);
+            if (!player) return;
+
+            const modal = $('#player-sheet-modal');
+            $('#edit-player-id').value = id;
+            $('#player-sheet-modal-title').textContent = `Editar Ficha: ${player.data.nome || 'Sem Nome'}`;
+
+            // Populate static fields
+            modal.querySelectorAll('input[data-path], textarea[data-path]').forEach(input => {
+                const path = input.dataset.path.split('.');
+                let value = player.data;
+                for (const key of path) {
+                    value = value ? value[key] : undefined;
+                }
+                input.value = value || (input.type === 'number' ? 0 : '');
+            });
+
+            renderPlayerSkillsForEdit(player.data.skills || [], player.data.atributos || {});
+            renderPlayerInventoryForEdit(player.data.inventario?.items || []);
+            
+            modal.style.display = 'flex';
+        }
+
+        function renderPlayerSkillsForEdit(skills, atributos) {
+            const container = $('#edit-player-skills-list');
+            container.innerHTML = '';
+            const ATTR_LIST = ["FOR", "AGI", "VIG", "AST", "SAB", "CAR", "FE"];
+            skills.forEach((skill, index) => {
+                const item = document.createElement('div');
+                item.className = 'dynamic-list-item';
+                item.style.gridTemplateColumns = '2fr 1fr 1fr 1fr auto';
+                item.innerHTML = `
+                    <input type="text" class="edit-player-skill-name" value="${skill.name}" placeholder="Nome da Skill">
+                    <select class="edit-player-skill-attr">${ATTR_LIST.map(a => `<option value="${a}" ${a === skill.attr ? 'selected' : ''}>${a}</option>`).join('')}</select>
+                    <label style="display:flex; align-items:center; gap: 4px;"><input type="checkbox" class="edit-player-skill-trained" ${skill.trained ? 'checked' : ''}> T</label>
+                    <label style="display:flex; align-items:center; gap: 4px;"><input type="checkbox" class="edit-player-skill-spec" ${skill.specialized ? 'checked' : ''}> E</label>
+                    <button class="btn small destructive" onclick="this.parentElement.remove()">X</button>
+                `;
+                container.appendChild(item);
+            });
+        }
+        
+        function addSkillToPlayer() {
+            const container = $('#edit-player-skills-list');
+            const ATTR_LIST = ["FOR", "AGI", "VIG", "AST", "SAB", "CAR", "FE"];
+            const item = document.createElement('div');
+            item.className = 'dynamic-list-item';
+            item.style.gridTemplateColumns = '2fr 1fr 1fr 1fr auto';
+            item.innerHTML = `
+                <input type="text" class="edit-player-skill-name" placeholder="Nova Skill">
+                <select class="edit-player-skill-attr">${ATTR_LIST.map(a => `<option value="${a}">${a}</option>`).join('')}</select>
+                <label style="display:flex; align-items:center; gap: 4px;"><input type="checkbox" class="edit-player-skill-trained"> T</label>
+                <label style="display:flex; align-items:center; gap: 4px;"><input type="checkbox" class="edit-player-skill-spec"> E</label>
+                <button class="btn small destructive" onclick="this.parentElement.remove()">X</button>
+            `;
+            container.appendChild(item);
+        }
+
+        function renderPlayerInventoryForEdit(items) {
+            const container = $('#edit-player-inventory-list');
+            container.innerHTML = '';
+            items.forEach(item => {
+                const row = document.createElement('div');
+                row.className = 'dynamic-list-item';
+                row.style.gridTemplateColumns = '3fr 1fr auto';
+                row.innerHTML = `
+                    <input type="text" class="edit-player-item-name" value="${item.name || ''}" placeholder="Nome do Item">
+                    <input type="number" class="edit-player-item-qty" value="${item.quantity || 1}" min="1">
+                    <button class="btn small destructive" onclick="this.parentElement.remove()">X</button>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function addItemToPlayer() {
+             const container = $('#edit-player-inventory-list');
+             const row = document.createElement('div');
+            row.className = 'dynamic-list-item';
+            row.style.gridTemplateColumns = '3fr 1fr auto';
+            row.innerHTML = `
+                <input type="text" class="edit-player-item-name" placeholder="Novo Item">
+                <input type="number" class="edit-player-item-qty" value="1" min="1">
+                <button class="btn small destructive" onclick="this.parentElement.remove()">X</button>
+            `;
+            container.appendChild(row);
+        }
+
+        function handleSavePlayerSheet() {
+            const modal = $('#player-sheet-modal');
+            const id = $('#edit-player-id').value;
+            const player = appData.players.find(p => p.id === id);
+            if (!player) return;
+            
+            const newData = {};
+            modal.querySelectorAll('input[data-path], textarea[data-path]').forEach(input => {
+                const path = input.dataset.path.split('.');
+                let current = newData;
+                path.forEach((key, index) => {
+                    if (index === path.length - 1) {
+                        current[key] = input.type === 'number' ? (parseInt(input.value) || 0) : input.value;
+                    } else {
+                        current[key] = current[key] || {};
+                        current = current[key];
+                    }
+                });
+            });
+
+            // Save skills
+            newData.skills = [];
+            $('#edit-player-skills-list').querySelectorAll('.dynamic-list-item').forEach(row => {
+                newData.skills.push({
+                    name: row.querySelector('.edit-player-skill-name').value,
+                    attr: row.querySelector('.edit-player-skill-attr').value,
+                    trained: row.querySelector('.edit-player-skill-trained').checked,
+                    specialized: row.querySelector('.edit-player-skill-spec').checked
+                });
+            });
+
+            // Save inventory
+            if (!newData.inventario) newData.inventario = {};
+            newData.inventario.items = [];
+             $('#edit-player-inventory-list').querySelectorAll('.dynamic-list-item').forEach(row => {
+                newData.inventario.items.push({
+                    name: row.querySelector('.edit-player-item-name').value,
+                    quantity: parseInt(row.querySelector('.edit-player-item-qty').value) || 1
+                });
+            });
+
+            player.data = newData;
+            saveState();
+            renderPlayers();
+            modal.style.display = 'none';
+        }
+
+        // --- NPCs ---
+        function renderNpcs(filter = '') {
+            const list = $('#npc-list');
+            const filteredNpcs = appData.npcs.filter(npc => npc.name.toLowerCase().includes(filter.toLowerCase()));
+            list.innerHTML = !filteredNpcs.length ? `<p class="muted">Nenhum NPC encontrado.</p>` : '';
+            filteredNpcs.forEach(npc => {
+                const item = document.createElement('div');
+                item.className = 'accordion-item';
+                item.innerHTML = `
+                    <div class="accordion-header" data-id="${npc.id}">
+                        <div class="accordion-title">${npc.name} <small class="muted">- ${npc.role || 'Sem função'}</small></div>
+                        <div class="accordion-actions">
+                            <button class="btn small edit-npc" data-id="${npc.id}">Editar</button>
+                            <button class="btn small destructive delete-npc" data-id="${npc.id}">Excluir</button>
+                        </div>
+                    </div>
+                    <div class="accordion-content">
+                        <b>Aparência:</b> <p>${npc.appearance.replace(/\n/g, '<br>') || 'N/A'}</p>
+                        <b>Personalidade:</b> <p>${npc.personality.replace(/\n/g, '<br>') || 'N/A'}</p>
+                        <b>Notas:</b> <p>${npc.notes.replace(/\n/g, '<br>') || 'N/A'}</p>
+                    </div>`;
+                list.appendChild(item);
+            });
+        }
+        function handleNpcForm(e) {
+            e.preventDefault();
+            const id = $('#npc-id').value;
+            const npcData = { name: $('#npc-name').value, role: $('#npc-role').value, appearance: $('#npc-appearance').value, personality: $('#npc-personality').value, notes: $('#npc-notes').value };
+            if (!npcData.name) { alert("O nome do NPC é obrigatório."); return; }
+            if (id) {
+                const index = appData.npcs.findIndex(item => item.id === id);
+                appData.npcs[index] = { ...appData.npcs[index], ...npcData };
+            } else { npcData.id = generateId(); appData.npcs.push(npcData); }
+            clearNpcForm(); renderNpcs($('#npc-search').value); saveState();
+        }
+        function clearNpcForm() { $('#npc-form').reset(); $('#npc-id').value = ''; $('#clearNpcForm').style.display = 'none'; }
+        function handleNpcListClick(e) {
+            const target = e.target; const id = target.dataset.id;
+            if (target.classList.contains('edit-npc')) {
+                const npc = appData.npcs.find(item => item.id === id);
+                $('#npc-id').value = npc.id; $('#npc-name').value = npc.name; $('#npc-role').value = npc.role;
+                $('#npc-appearance').value = npc.appearance; $('#npc-personality').value = npc.personality; $('#npc-notes').value = npc.notes;
+                $('#clearNpcForm').style.display = 'inline-block';
+                target.closest('.card, .pane').scrollIntoView({ behavior: 'smooth' });
+            } else if (target.classList.contains('delete-npc')) {
+                if (confirm('Tem certeza?')) { appData.npcs = appData.npcs.filter(item => item.id !== id); renderNpcs($('#npc-search').value); saveState(); }
+            } else if (target.closest('.accordion-header')) { target.closest('.accordion-item').classList.toggle('open'); }
+        }
+
+        // --- ATLAS ---
+        function renderAtlas() {
+            const list = $('#atlas-list');
+            const regions = ["Haravoth", "Ashkar", "Neveloth", "Metsudoth", "Neharim", "Qadmiar", "Yam Talorah", "Gan-Eved"];
+            list.innerHTML = '';
+            regions.forEach(regionName => {
+                if (!appData.atlas[regionName]) {
+                    appData.atlas[regionName] = { notes: '', corruption: 0 };
+                }
+                const regionData = appData.atlas[regionName];
+                const item = document.createElement('div');
+                item.className = 'accordion-item';
+                item.innerHTML = `
+                    <div class="accordion-header">
+                        <div>
+                            <div class="accordion-title">${regionName}</div>
+                            <small class="muted">Corrupção: ${regionData.corruption}</small>
+                        </div>
+                        <div class="accordion-actions">
+                            <button class="btn small" onclick="updateRegionCorruption('${regionName}', 1)">+ Corrupção</button>
+                            <button class="btn small" onclick="updateRegionCorruption('${regionName}', -1)">- Corrupção</button>
+                        </div>
+                    </div>
+                    <div class="accordion-content">
+                        <textarea class="atlas-notes" data-region="${regionName}" placeholder="Anotações, segredos e ganchos de aventura para ${regionName}...">${regionData.notes}</textarea>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+            $$('#atlas-list .accordion-header').forEach(header => header.addEventListener('click', e => {
+                 if (!e.target.matches('button')) e.currentTarget.closest('.accordion-item').classList.toggle('open');
+            }));
+            $$('.atlas-notes').forEach(textarea => textarea.addEventListener('input', e => {
+                appData.atlas[e.target.dataset.region].notes = e.target.value;
+                // No need to call saveState here, it's called by the button clicks, this would be too frequent.
+                // Autosave can be implemented later if needed.
+            }));
+        }
+
+        window.updateRegionCorruption = (regionName, amount) => {
+            appData.atlas[regionName].corruption += amount;
+            if (appData.atlas[regionName].corruption < 0) appData.atlas[regionName].corruption = 0;
+            saveState();
+            renderAtlas();
+        };
+
+        // --- MAPS ---
+        function renderMaps() {
+            const list = $('#map-list');
+            list.innerHTML = !appData.maps.length ? `<p class="muted">Nenhum mapa adicionado ainda.</p>` : '';
+            appData.maps.forEach(map => {
+                const item = document.createElement('div');
+                item.className = 'map-item';
+                item.innerHTML = `
+                    <img src="${map.data}" alt="${map.name}" data-id="${map.id}">
+                    <p>${map.name}</p>
+                    <div class="map-controls">
+                        <button class="btn small destructive delete-map" data-id="${map.id}">Excluir</button>
+                        <label class="btn small">Substituir <input type="file" class="replace-map" data-id="${map.id}" style="display:none;" accept="image/*"></label>
+                    </div>`;
+                list.appendChild(item);
+            });
+        }
+        function handleAddMap() {
+            const fileInput = $('#map-upload'), nameInput = $('#map-name');
+            if (!fileInput.files[0] || !nameInput.value) { alert("Selecione um arquivo e digite um nome."); return; }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                appData.maps.push({ id: generateId(), name: nameInput.value, data: e.target.result });
+                renderMaps(); saveState(); fileInput.value = ''; nameInput.value = '';
+            };
+            reader.readAsDataURL(fileInput.files[0]);
+        }
+        function handleMapListClick(e) {
+            const target = e.target, id = target.dataset.id;
+            if (target.tagName === 'IMG') {
+                const map = appData.maps.find(m => m.id === id);
+                $('#map-modal-img').src = map.data; $('#map-modal-title').textContent = map.name;
+                $('#map-modal').style.display = 'flex';
+            } else if (target.classList.contains('delete-map')) {
+                if (confirm('Tem certeza?')) { appData.maps = appData.maps.filter(m => m.id !== id); renderMaps(); saveState(); }
+            } else if (target.classList.contains('replace-map') && target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const mapIndex = appData.maps.findIndex(m => m.id === id);
+                    appData.maps[mapIndex].data = event.target.result;
+                    renderMaps(); saveState();
+                };
+                reader.readAsDataURL(target.files[0]);
+            }
+        }
+
+        // --- GENERATORS ---
+        function handleGeneratorClick(e) {
+            const genId = e.target.dataset.generator; if (!genId) return;
+            const list = appData.generators[genId === 'regional' ? 'regional' : genId][genId === 'regional' ? $('#region-select').value : ''];
+            $(`#${genId}-result`).textContent = list[Math.floor(Math.random() * list.length)];
+        }
+        function handleTreasureGenerator() {
+            const tier = $('#treasure-tier-select').value;
+            const list = appData.generators.treasures[tier];
+            $('#treasure-result').textContent = list[Math.floor(Math.random() * list.length)];
+        }
+        function populateRegionSelect() {
+            $('#region-select').innerHTML = Object.keys(appData.generators.regional).map(r => `<option value="${r}">${r}</option>`).join('');
+        }
+        function renderCustomGenerators() {
+            const container = $('#custom-generators-list');
+            container.innerHTML = !appData.generators.custom.length ? `<p class="muted">Nenhuma tabela customizada criada.</p>` : '';
+            appData.generators.custom.forEach((gen, index) => {
+                const card = document.createElement('div');
+                card.className = 'card'; card.style.marginBottom = '1rem';
+                card.innerHTML = `
+                    <div class="flex-between">
+                        <h3>${gen.title}</h3>
+                        <div>
+                            <button class="btn small" onclick="rollCustomGenerator(${index})">Rolar</button>
+                            <button class="btn small destructive" onclick="deleteCustomGenerator(${index})">Excluir</button>
+                        </div>
+                    </div>
+                    <div id="custom-gen-result-${index}" class="result-box"></div>`;
+                container.appendChild(card);
+            });
+        }
+        window.rollCustomGenerator = (index) => {
+            const gen = appData.generators.custom[index];
+            $(`#custom-gen-result-${index}`).textContent = gen.items[Math.floor(Math.random() * gen.items.length)];
+        };
+        window.deleteCustomGenerator = (index) => {
+            if (confirm(`Excluir "${appData.generators.custom[index].title}"?`)) {
+                appData.generators.custom.splice(index, 1);
+                renderCustomGenerators(); saveState();
+            }
+        };
+        function handleAddCustomGenerator() {
+            const title = $('#custom-gen-title').value.trim(), itemsText = $('#custom-gen-items').value.trim();
+            if (!title || !itemsText) { alert('Preencha o título e os itens.'); return; }
+            const items = itemsText.split('\n').filter(line => line.trim() !== '');
+            appData.generators.custom.push({ title, items });
+            renderCustomGenerators(); saveState();
+            $('#custom-gen-title').value = ''; $('#custom-gen-items').value = '';
+        }
+
+        // --- TENSION CLOCKS, TIMER, GROUP POINTS ---
+        function renderClocks() {
+            const container = $('#clocks-container');
+            container.innerHTML = !appData.clocks.length ? `<p class="muted">Nenhum relógio criado.</p>` : '';
+            appData.clocks.forEach(clock => { container.innerHTML += createClockHTML(clock); });
+        }
+        function createClockHTML(clock) {
+            const segments = parseInt(clock.segments), angle = 360 / segments; let paths = '';
+            const polarToCartesian = (cx, cy, r, angleDeg) => {
+                const rad = (angleDeg) * Math.PI / 180.0;
+                return { x: cx + (r * Math.cos(rad)), y: cy + (r * Math.sin(rad)) };
+            };
+            for (let i = 0; i < segments; i++) {
+                const start = polarToCartesian(50, 50, 45, (i + 1) * angle - 90);
+                const end = polarToCartesian(50, 50, 45, i * angle - 90);
+                const d = `M 50 50 L ${start.x} ${start.y} A 45 45 0 ${angle <= 180 ? 0:1} 0 ${end.x} ${end.y} Z`;
+                paths += `<path class="clock-segment ${i < clock.filled ? 'filled':''}" d="${d}" data-index="${i}"></path>`;
+            }
+            return `<div class="clock" data-id="${clock.id}">
+                    <svg class="clock-svg" viewBox="0 0 100 100" width="200" height="200">${paths}</svg>
+                    <div class="clock-title">${clock.title} (${clock.filled}/${clock.segments})</div>
+                    <div><button class="btn small" onclick="resetClock('${clock.id}')">Resetar</button> <button class="btn small destructive" onclick="deleteClock('${clock.id}')">Excluir</button></div>
+                </div>`;
+        }
+        function handleAddClock() {
+            const title = $('#clock-title').value.trim(); if (!title) { alert('Dê um título ao relógio.'); return; }
+            appData.clocks.push({ id: generateId(), title: title, segments: $('#clock-segments').value, filled: 0 });
+            renderClocks(); saveState(); $('#clock-title').value = '';
+        }
+        function handleClockClick(e) {
+            const segment = e.target; if (!segment.classList.contains('clock-segment')) return;
+            const clock = appData.clocks.find(c => c.id === segment.closest('.clock').dataset.id);
+            const index = parseInt(segment.dataset.index);
+            clock.filled = (index === 0 && clock.filled === 1) ? 0 : (index + 1 === clock.filled) ? clock.filled - 1 : index + 1;
+            renderClocks(); saveState();
+        }
+        window.resetClock = (id) => { appData.clocks.find(c => c.id === id).filled = 0; renderClocks(); saveState(); }
+        window.deleteClock = (id) => { if (confirm('Tem certeza?')) { appData.clocks = appData.clocks.filter(c => c.id !== id); renderClocks(); saveState(); }}
+        
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
+            const seconds = (timerSeconds % 60).toString().padStart(2, '0');
+            $('#timer-display').textContent = `${minutes}:${seconds}`;
+        }
+        function startTimer() {
+            if (timerInterval) return;
+            timerInterval = setInterval(() => { timerSeconds++; updateTimerDisplay(); }, 1000);
+        }
+        function pauseTimer() { clearInterval(timerInterval); timerInterval = null; }
+        function resetTimer() { pauseTimer(); timerSeconds = 0; updateTimerDisplay(); }
+
+        function renderGroupPoints() {
+            $('#blessing-points').textContent = appData.groupPoints.blessing;
+            $('#corruption-points').textContent = appData.groupPoints.corruption;
+        }
+        window.updateGroupPoints = (type, amount) => {
+            appData.groupPoints[type] += amount;
+            if (appData.groupPoints[type] < 0) appData.groupPoints[type] = 0;
+            renderGroupPoints();
+            saveState();
+        }
+
+        // --- CHALLENGE GUIDE ---
+        function handleChallengeSelect() {
+            const selected = $('#challenge-select').value;
+            const contentDiv = $('#challenge-guide-content');
+            if (selected && challengeGuideData[selected]) {
+                contentDiv.innerHTML = challengeGuideData[selected] + dfTableHTML;
+            } else { contentDiv.innerHTML = ''; }
+        }
+        
+        // --- RANDOM NPC ---
+        function handleRandomNpc() {
+            const resultBox = $('#random-npc-result');
+            if (appData.npcs.length === 0) { resultBox.textContent = 'Nenhum NPC cadastrado para sortear.'; return; }
+            const randomNpc = appData.npcs[Math.floor(Math.random() * appData.npcs.length)];
+            resultBox.innerHTML = `<strong>${randomNpc.name}</strong> <span class="muted">(${randomNpc.role || 'Sem função'})</span>`;
+        }
+
+        // --- BESTIARY & ENCOUNTERS ---
+        function renderBestiaryPage() {
+            const list = $('#bestiary-main-list');
+            const search = $('#bestiary-search').value.toLowerCase();
+            const typeFilter = $('#bestiary-filter-type').value;
+            
+            const filtered = appData.bestiary.filter(e => 
+                (e.name.toLowerCase().includes(search) || e.type.toLowerCase().includes(search)) &&
+                (typeFilter === 'all' || e.type === typeFilter)
+            );
+
+            list.innerHTML = !filtered.length ? `<p class="muted" style="text-align:center; padding: 1rem;">Nenhuma criatura encontrada.</p>` : '';
+            filtered.forEach(enemy => {
+                const item = document.createElement('div');
+                item.className = 'accordion-item';
+                item.innerHTML = `
+                    <div class="accordion-header">
+                        <div class="accordion-title">${enemy.name} <small class="muted">- ${enemy.type} (ND ${enemy.nd})</small></div>
+                        <div class="accordion-actions">
+                             <button class="btn small" onclick="editEnemyBestiary('${enemy.id}')">Editar</button>
+                             <button class="btn small primary" onclick="addBestiaryToEncounter('${enemy.id}')">Add ao Encontro</button>
+                        </div>
+                    </div>
+                    <div class="accordion-content"><b>HP:</b> ${enemy.hp} | <b>DEF:</b> ${enemy.def} | <b>Ini:</b> d20+${enemy.ini_bonus}<hr style="border-color:var(--border); margin: 0.5rem 0;"><p>${enemy.abilities.replace(/\n/g, '<br>') || 'N/A'}</p></div>
+                `;
+                list.appendChild(item);
+            });
+            list.addEventListener('click', e => { if (e.target.closest('.accordion-header')) e.target.closest('.accordion-item').classList.toggle('open'); });
+        }
+
+        function populateBestiaryFilter() {
+            const types = [...new Set(appData.bestiary.map(e => e.type))];
+            const select = $('#bestiary-filter-type');
+            select.innerHTML = `<option value="all">Todos os Tipos</option>`;
+            types.forEach(type => {
+                if(type) select.innerHTML += `<option value="${type}">${type}</option>`;
+            });
+        }
+        
+        function handleSaveEnemyBestiary() {
+            const id = $('#enemy-id-bestiary').value;
+            const enemyData = {
+                name: $('#enemy-name-bestiary').value.trim(),
+                type: $('#enemy-type-bestiary').value.trim(),
+                nd: parseInt($('#enemy-nd-bestiary').value) || 0,
+                hp: parseInt($('#enemy-hp-bestiary').value) || 10,
+                def: parseInt($('#enemy-def-bestiary').value) || 10,
+                ini_bonus: parseInt($('#enemy-ini-bonus-bestiary').value) || 0,
+                abilities: $('#enemy-abilities-bestiary').value
+            };
+            if (!enemyData.name) { alert("Nome da criatura é obrigatório."); return; }
+            if (id) {
+                const index = appData.bestiary.findIndex(e => e.id === id);
+                appData.bestiary[index] = { ...appData.bestiary[index], ...enemyData };
+            } else {
+                enemyData.id = generateId();
+                appData.bestiary.push(enemyData);
+            }
+            clearEnemyFormBestiary(); renderBestiaryPage(); populateBestiaryFilter(); saveState();
+        }
+
+        window.editEnemyBestiary = (id) => {
+            const enemy = appData.bestiary.find(e => e.id === id);
+            $('#enemy-id-bestiary').value = enemy.id;
+            $('#enemy-name-bestiary').value = enemy.name;
+            $('#enemy-type-bestiary').value = enemy.type;
+            $('#enemy-nd-bestiary').value = enemy.nd;
+            $('#enemy-hp-bestiary').value = enemy.hp;
+            $('#enemy-def-bestiary').value = enemy.def;
+            $('#enemy-ini-bonus-bestiary').value = enemy.ini_bonus;
+            $('#enemy-abilities-bestiary').value = enemy.abilities;
+            $('#clear-enemy-form-btn-bestiary').style.display = 'inline-block';
+        };
+
+        function clearEnemyFormBestiary() {
+            $('#enemy-id-bestiary').value = ''; $('#enemy-name-bestiary').value = '';
+            $('#enemy-type-bestiary').value = ''; $('#enemy-nd-bestiary').value = '';
+            $('#enemy-hp-bestiary').value = ''; $('#enemy-def-bestiary').value = '';
+            $('#enemy-ini-bonus-bestiary').value = ''; $('#enemy-abilities-bestiary').value = '';
+            $('#clear-enemy-form-btn-bestiary').style.display = 'none';
+        }
+
+        function renderEncounterBuilder() {
+            const bestiaryList = $('#encounter-builder-bestiary-list');
+            bestiaryList.innerHTML = '';
+             appData.bestiary.forEach(enemy => {
+                const item = document.createElement('div');
+                item.className = 'bestiary-item';
+                item.innerHTML = `<span><strong>${enemy.name}</strong> <small class="muted">ND ${enemy.nd}</small></span>
+                                <button class="btn small primary" onclick="addBestiaryToEncounter('${enemy.id}')">+</button>`;
+                bestiaryList.appendChild(item);
+            });
+
+            const encounterList = $('#encounter-builder-list');
+            encounterList.innerHTML = '';
+             appData.encounters.current.creatures.forEach(creature => {
+                const item = document.createElement('div');
+                item.className = 'bestiary-item';
+                item.innerHTML = `<span><strong>${creature.name}</strong> x ${creature.qty}</span>
+                                <button class="btn small destructive" onclick="removeCreatureFromEncounter('${creature.id}')">X</button>`;
+                encounterList.appendChild(item);
+             });
+             updateEncounterSummary();
+        }
+
+        window.addBestiaryToEncounter = (id) => {
+            const existing = appData.encounters.current.creatures.find(c => c.id === id);
+            if (existing) {
+                existing.qty++;
+            } else {
+                 const enemy = appData.bestiary.find(e => e.id === id);
+                 appData.encounters.current.creatures.push({ id: enemy.id, name: enemy.name, nd: enemy.nd, hp: enemy.hp, qty: 1 });
+            }
+            renderEncounterBuilder(); saveState();
+        };
+
+        window.removeCreatureFromEncounter = (id) => {
+            const index = appData.encounters.current.creatures.findIndex(c => c.id === id);
+            if (index > -1) {
+                appData.encounters.current.creatures[index].qty--;
+                if (appData.encounters.current.creatures[index].qty <= 0) {
+                    appData.encounters.current.creatures.splice(index, 1);
+                }
+            }
+            renderEncounterBuilder(); saveState();
+        };
+        
+        function updateEncounterSummary() {
+            const summary = $('#encounter-builder-summary');
+            const creatures = appData.encounters.current.creatures;
+            let totalHp = 0, totalNd = 0;
+            creatures.forEach(c => {
+                totalHp += c.hp * c.qty;
+                totalNd += c.nd * c.qty;
+            });
+            summary.innerHTML = `<strong>HP Total:</strong> ${totalHp} | <strong>ND Total:</strong> ${totalNd}`;
+        }
+        
+        function clearEncounter() {
+            appData.encounters.current = { name: '', creatures: [] };
+            $('#encounter-builder-name').value = '';
+            renderEncounterBuilder(); saveState();
+        }
+
+        function sendToCombat() {
+            const encounter = appData.encounters.current;
+            if (encounter.creatures.length === 0) {
+                alert("Adicione criaturas ao encontro primeiro.");
+                return;
+            }
+            appData.combat.name = $('#encounter-builder-name').value;
+            appData.combat.participants = appData.combat.participants.filter(p => p.isPlayer);
+            
+            encounter.creatures.forEach(c => {
+                for (let i = 0; i < c.qty; i++) {
+                     const enemy = appData.bestiary.find(e => e.id === c.id);
+                     appData.combat.participants.push({
+                        id: generateId(), baseId: enemy.id, name: `${enemy.name} ${i + 1}`,
+                        ini: null, ini_bonus: enemy.ini_bonus, hp: enemy.hp, maxHp: enemy.hp,
+                        cond: "", isPlayer: false
+                    });
+                }
+            });
+
+            // Switch tab to Combat
+            $$('.tab').forEach(t => t.classList.remove('active'));
+            $$('.pane').forEach(p => p.classList.remove('active'));
+            $('[data-tab="combat"]').classList.add('active');
+            $('#combat').classList.add('active');
+
+            $('#encounter-name-display').value = appData.combat.name;
+            renderCombatTracker();
+            saveState();
+        }
+        
+        // --- COMBAT TRACKER ---
+        function renderCombatBestiary() {
+            const list = $('#combat-bestiary-list');
+            list.innerHTML = '';
+             appData.bestiary.forEach(enemy => {
+                const item = document.createElement('div');
+                item.className = 'bestiary-item';
+                item.innerHTML = `
+                    <span><strong>${enemy.name}</strong> <small class="muted">ND ${enemy.nd}</small></span>
+                    <button class="btn small primary" onclick="addEnemyToCombat('${enemy.id}')">Add</button>`;
+                list.appendChild(item);
+            });
+        }
+        
+        window.addEnemyToCombat = (id) => {
+            const enemy = appData.bestiary.find(e => e.id === id);
+            const count = appData.combat.participants.filter(p => p.baseId === id).length + 1;
+            appData.combat.participants.push({
+                id: generateId(), baseId: id, name: `${enemy.name} ${count}`,
+                ini: null, ini_bonus: enemy.ini_bonus, hp: enemy.hp, maxHp: enemy.hp,
+                cond: "", isPlayer: false
+            });
+            renderCombatTracker(); saveState();
+        }
+        
+        function handleAddPlayer() {
+            const name = $('#add-player-name').value.trim();
+            if (!name) return;
+            appData.combat.participants.push({
+                id: generateId(), name: name, ini: parseInt($('#add-player-ini').value) || null,
+                hp: parseInt($('#add-player-hp').value) || 10, maxHp: parseInt($('#add-player-hp').value) || 10,
+                cond: "", isPlayer: true
+            });
+            $('#add-player-name').value = ''; $('#add-player-ini').value = ''; $('#add-player-hp').value = '';
+            renderCombatTracker(); saveState();
+        }
+        
+        function handleRollInitiative() {
+            appData.combat.participants.forEach(p => {
+                if (p.ini === null) {
+                    p.ini = rollDice(20) + (p.isPlayer ? 0 : p.ini_bonus);
+                }
+            });
+            appData.combat.participants.sort((a, b) => b.ini - a.ini);
+            appData.combat.currentTurn = 0;
+            appData.combat.round = 1;
+            renderCombatTracker(); saveState();
+        }
+
+        function handleNextTurn() {
+            if (appData.combat.participants.length === 0) return;
+            appData.combat.currentTurn++;
+            if (appData.combat.currentTurn >= appData.combat.participants.length) {
+                appData.combat.currentTurn = 0;
+                appData.combat.round++;
+            }
+            renderCombatTracker(); saveState();
+        }
+        
+        function handleEndCombat() {
+            if (confirm("Tem certeza que deseja encerrar o combate e limpar a lista de participantes?")) {
+                appData.combat = { participants: [], round: 0, currentTurn: -1, name: "" };
+                $('#encounter-name-display').value = '';
+                renderCombatTracker(); saveState();
+            }
+        }
+        
+        function renderCombatTracker() {
+            const list = $('#combat-participants');
+            list.innerHTML = '';
+            $('#round-counter').textContent = appData.combat.round;
+            appData.combat.participants.forEach((p, index) => {
+                const row = document.createElement('tr');
+                if (index === appData.combat.currentTurn) row.classList.add('current-turn');
+                row.innerHTML = `
+                    <td>${p.name}</td>
+                    <td>${p.ini === null ? '-' : p.ini}</td>
+                    <td><input type="number" value="${p.hp}" class="combat-hp" data-id="${p.id}" style="width:60px;"> / ${p.maxHp}</td>
+                    <td><input type="text" value="${p.cond}" class="combat-cond" data-id="${p.id}"></td>
+                    <td><button class="btn small destructive" onclick="removeParticipant('${p.id}')">X</button></td>
+                `;
+                list.appendChild(row);
+            });
+        }
+        
+        window.removeParticipant = (id) => {
+            appData.combat.participants = appData.combat.participants.filter(p => p.id !== id);
+            if (appData.combat.currentTurn >= appData.combat.participants.length && appData.combat.participants.length > 0) {
+                 appData.combat.currentTurn = 0;
+            } else if (appData.combat.participants.length === 0){
+                appData.combat.currentTurn = -1;
+                appData.combat.round = 0;
+            }
+            renderCombatTracker(); saveState();
+        }
+        
+        function handleCombatListChange(e) {
+            const target = e.target;
+            const id = target.dataset.id;
+            const participant = appData.combat.participants.find(p => p.id === id);
+            if (!participant) return;
+            
+            if (target.classList.contains('combat-hp')) {
+                participant.hp = parseInt(target.value);
+            } else if (target.classList.contains('combat-cond')) {
+                participant.cond = target.value;
+            }
+            saveState();
+        }
+
+        function handleApplyGlobalAction() {
+            const value = parseInt($('#global-action-value').value);
+            const targetType = $('#global-action-target').value;
+            if (isNaN(value)) return;
+
+            appData.combat.participants.forEach(p => {
+                if (targetType === 'all' || (targetType === 'players' && p.isPlayer) || (targetType === 'enemies' && !p.isPlayer)) {
+                    p.hp += value;
+                }
+            });
+            renderCombatTracker();
+            saveState();
+        }
+        
+        // --- DICE ROLLER ---
+        function rollDice(sides) {
+            // Using crypto.getRandomValues for better randomness
+            const randomBuffer = new Uint32Array(1);
+            window.crypto.getRandomValues(randomBuffer);
+            return (randomBuffer[0] % sides) + 1;
+        }
+
+        function handleDiceRoll(e) {
+            if (!e.target.dataset.dice) return;
+            const sides = parseInt(e.target.dataset.dice);
+            const result = rollDice(sides);
+            $('#dice-result').textContent = result;
+            const history = $('#dice-history');
+            const newRoll = document.createElement('div');
+            newRoll.textContent = `d${sides} → ${result}`;
+            history.prepend(newRoll);
+        }
+
+        function clearDiceHistory() {
+            $('#dice-history').innerHTML = '';
+            $('#dice-result').textContent = '0';
+        }
+        
+        // --- ORDERS REPUTATION ---
+        function renderOrders() {
+            const list = $('#orders-list');
+            const orders = ["Irmandade de Lumenar", "Ordem do Escudo de Pedra", "Conclave dos Navegantes", "Fraternidade de Neharim", "Vigias de Qadmiar"];
+            const levels = ["Hostil", "Neutro", "Aliado", "Confidente", "Emissário"];
+            list.innerHTML = '';
+            orders.forEach(order => {
+                const item = document.createElement('div');
+                item.className = 'order-item';
+                const currentLevel = appData.ordersReputation[order] || 'Neutro';
+                item.innerHTML = `
+                    <span style="font-weight: 600;">${order}</span>
+                    <select data-order="${order}" style="width: 150px;">
+                        ${levels.map(level => `<option value="${level}" ${level === currentLevel ? 'selected' : ''}>${level}</option>`).join('')}
+                    </select>
+                `;
+                list.appendChild(item);
+            });
+        }
+        
+        function handleOrderReputationChange(e) {
+            if (e.target.dataset.order) {
+                const order = e.target.dataset.order;
+                const level = e.target.value;
+                appData.ordersReputation[order] = level;
+                saveState();
+            }
+        }
+
+        // --- GLOBAL SAVE/LOAD ---
+        function exportJson() {
+            const jsonString = JSON.stringify(appData, null, 2);
+            const blob = new Blob([jsonString], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `netzeroth_gm_data_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importJson(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if (confirm("Isso irá sobrescrever todos os seus dados atuais. Deseja continuar?")) {
+                        appData = importedData;
+                        saveState();
+                        location.reload();
+                    }
+                } catch (err) {
+                    alert("Erro ao ler o arquivo. Verifique se é um JSON válido.");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function init() {
+            loadState();
+            $('#themeToggle').addEventListener('click', () => {
+                const current = document.body.dataset.theme;
+                document.body.dataset.theme = (current === 'dark' ? 'light' : 'dark');
+            });
+            $('#tabContainer').addEventListener('click', handleTabClick);
+            
+            // Diary
+            $('#saveDiaryEntry').addEventListener('click', handleDiaryForm);
+            $('#clearDiaryForm').addEventListener('click', clearDiaryForm);
+            $('#diary-list').addEventListener('click', handleDiaryListClick);
+            
+            // Players
+            $('#player-list').addEventListener('click', handlePlayerListClick);
+            $('#import-player-json').addEventListener('change', handleImportPlayerJson);
+            $('#add-player-manual-btn').addEventListener('click', handleAddPlayerManual);
+            $('#save-player-sheet-edit').addEventListener('click', handleSavePlayerSheet);
+            $('#cancel-player-sheet-edit').addEventListener('click', () => $('#player-sheet-modal').style.display = 'none');
+            $('#add-skill-to-player-btn').addEventListener('click', addSkillToPlayer);
+            $('#add-item-to-player-btn').addEventListener('click', addItemToPlayer);
+            $('#player-sheet-tabs-container').addEventListener('click', (e) => {
+                if(e.target.classList.contains('tab')) {
+                    const targetPane = e.target.dataset.pane;
+                    $('#player-sheet-tabs-container').querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    e.target.classList.add('active');
+                    $('#player-sheet-panes-container').querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
+                    $('#player-sheet-panes-container').querySelector(`[data-pane-content="${targetPane}"]`).classList.add('active');
+                }
+            });
+
+
+            // NPCs
+            $('#saveNpc').addEventListener('click', handleNpcForm);
+            $('#clearNpcForm').addEventListener('click', clearNpcForm);
+            $('#npc-list').addEventListener('click', handleNpcListClick);
+            $('#npc-search').addEventListener('input', (e) => renderNpcs(e.target.value));
+            
+            // Maps
+            $('#addMapBtn').addEventListener('click', handleAddMap);
+            $('#map-list').addEventListener('click', handleMapListClick);
+            $('#map-modal').addEventListener('click', (e) => { if(e.target.id === 'map-modal') e.currentTarget.style.display = 'none'; });
+            
+            // Generators
+            $$('[data-generator]').forEach(btn => btn.addEventListener('click', handleGeneratorClick));
+            $('#addCustomGeneratorBtn').addEventListener('click', handleAddCustomGenerator);
+            $('#random-npc-btn').addEventListener('click', handleRandomNpc);
+            $('#treasure-btn').addEventListener('click', handleTreasureGenerator);
+            
+            // Clocks, Timer, Group Points
+            $('#addClockBtn').addEventListener('click', handleAddClock);
+            $('#clocks-container').addEventListener('click', handleClockClick);
+            $('#start-timer').addEventListener('click', startTimer);
+            $('#pause-timer').addEventListener('click', pauseTimer);
+            $('#reset-timer').addEventListener('click', resetTimer);
+            
+            // Bestiary
+            $('#save-enemy-btn-bestiary').addEventListener('click', handleSaveEnemyBestiary);
+            $('#clear-enemy-form-btn-bestiary').addEventListener('click', clearEnemyFormBestiary);
+            $('#bestiary-search').addEventListener('input', renderBestiaryPage);
+            $('#bestiary-filter-type').addEventListener('change', renderBestiaryPage);
+            
+            // Encounter Builder
+            $('#clear-encounter-btn').addEventListener('click', clearEncounter);
+            $('#send-to-combat-btn').addEventListener('click', sendToCombat);
+
+            // Combat
+            $('#add-player-btn').addEventListener('click', handleAddPlayer);
+            $('#roll-initiative-btn').addEventListener('click', handleRollInitiative);
+            $('#next-turn-btn').addEventListener('click', handleNextTurn);
+            $('#end-combat-btn').addEventListener('click', handleEndCombat);
+            $('#combat-participants').addEventListener('change', handleCombatListChange);
+            $('#apply-global-action').addEventListener('click', handleApplyGlobalAction);
+            $('#goto-bestiary-link').addEventListener('click', (e) => {
+                e.preventDefault();
+                $$('.tab').forEach(t => t.classList.remove('active'));
+                $$('.pane').forEach(p => p.classList.remove('active'));
+                $('[data-tab="bestiary"]').classList.add('active');
+                $('#bestiary').classList.add('active');
+            });
+
+            // Dice Roller
+            $('.dice-buttons').addEventListener('click', handleDiceRoll);
+            $('#clear-dice-history').addEventListener('click', clearDiceHistory);
+            
+            // Guide
+            $('#challenge-select').addEventListener('change', handleChallengeSelect);
+            $$('#tests .accordion-header').forEach(header => {
+                header.addEventListener('click', () => header.parentElement.classList.toggle('open'));
+            });
+            
+            // Orders
+            $('#orders-list').addEventListener('change', handleOrderReputationChange);
+
+            // Global Save/Load
+            $('#save-all-btn').addEventListener('click', () => { saveState(); alert("Dados salvos com sucesso!"); });
+            $('#export-json-btn').addEventListener('click', exportJson);
+            $('#import-json-input').addEventListener('change', importJson);
+
+            // Initial Renders
+            renderDiary(); renderPlayers(); renderNpcs(); renderMaps();
+            populateRegionSelect(); renderCustomGenerators(); renderClocks(); renderGroupPoints();
+            renderBestiaryPage(); populateBestiaryFilter(); renderEncounterBuilder();
+            renderCombatTracker(); renderCombatBestiary(); renderOrders(); renderAtlas();
+        }
+        init();
+    });
+    </script>
+</body>
+</html>
